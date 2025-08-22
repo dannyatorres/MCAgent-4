@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Lead Formatter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: rgba(118, 75, 162, 0.05);
+        }
+
+        .upload-area.dragging {
+            border-color: #764ba2;
+            background: rgba(118, 75, 162, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #667eea;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #999;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .webhook-config {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .webhook-config label {
+            display: block;
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .webhook-config input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .webhook-config input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status.processing {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #28a745;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #dc3545;
+        }
+
+        .download-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .download-buttons {
+            display: grid;
+            gap: 15px;
+        }
+
+        .download-btn {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .download-btn span {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: normal;
+        }
+
+        .instructions {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e8f4fd;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+
+        .instructions h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .instructions p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #555;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,.1);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 CRM Lead Formatter</h1>
+        <p class="subtitle">Transform your CSV files into CRM-ready format</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">Click to upload CSV file</div>
+            <div class="upload-subtext">or drag and drop here</div>
+            <input type="file" id="fileInput" accept=".csv">
+        </div>
+
+        <div class="webhook-config">
+            <label for="webhookUrl">Webhook URL (optional - for server processing)</label>
+            <input type="text" id="webhookUrl" placeholder="https://your-webhook-url.com/process">
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div id="downloadSection" class="download-section">
+            <h3 style="margin-bottom: 15px; color: #333;">📥 Download Your Files</h3>
+            <div class="download-buttons">
+                <a href="#" id="crmDownload" class="download-btn" download>
+                    CRM Import File
+                    <span>Full formatted data</span>
+                </a>
+                <a href="#" id="nameOnlyDownload" class="download-btn" download>
+                    Name Only File
+                    <span>For mass texting</span>
+                </a>
+                <a href="#" id="phoneBurnerDownload" class="download-btn" download>
+                    PhoneBurner Format
+                    <span>Click-to-call platform</span>
+                </a>
+            </div>
+        </div>
+
+        <div id="instructions" class="instructions">
+            <h3>📋 Broker Instructions</h3>
+            <ol>
+                <li><strong>Name Only File:</strong> Send to your iPhone for mass texting</li>
+                <li><strong>CRM Import File:</strong> Import into the CRM system</li>
+                <li>Complete both steps before proceeding</li>
+                <li>Add responsive files into MCA Underwriting for FCS report</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const webhookUrl = document.getElementById('webhookUrl');
+        const status = document.getElementById('status');
+        const downloadSection = document.getElementById('downloadSection');
+        const instructions = document.getElementById('instructions');
+
+        // Drag and drop handlers
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragging');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragging');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragging');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'text/csv') {
+                handleFile(files[0]);
+            } else {
+                showStatus('Please upload a CSV file', 'error');
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        function formatPhoneNumber(phone) {
+            if (!phone) return '';
+            return phone.replace(/\D/g, '').slice(0, 10);
+        }
+
+        function formatDate(date) {
+            if (!date) return '';
+            
+            // Month name mappings
+            const monthNames = {
+                'january': '01', 'jan': '01',
+                'february': '02', 'feb': '02',
+                'march': '03', 'mar': '03',
+                'april': '04', 'apr': '04',
+                'may': '05',
+                'june': '06', 'jun': '06',
+                'july': '07', 'jul': '07',
+                'august': '08', 'aug': '08',
+                'september': '09', 'sep': '09', 'sept': '09',
+                'october': '10', 'oct': '10',
+                'november': '11', 'nov': '11',
+                'december': '12', 'dec': '12'
+            };
+            
+            // Clean the date string
+            date = date.trim();
+            
+            // Try parsing different date formats
+            let dateObj;
+            
+            // Format: "August 4, 2020" or "Feb 02 2021" or "March 15, 2023"
+            const monthNamePattern = /^([a-zA-Z]+)\s+(\d{1,2}),?\s+(\d{4})$/;
+            const monthNameMatch = date.match(monthNamePattern);
+            
+            if (monthNameMatch) {
+                const monthName = monthNameMatch[1].toLowerCase();
+                const day = monthNameMatch[2];
+                const year = monthNameMatch[3];
+                
+                if (monthNames[monthName]) {
+                    const month = monthNames[monthName];
+                    return `${month}-${day.padStart(2, '0')}-${year}`;
+                }
+            }
+            
+            // Format: "4 August 2020" or "02 Feb 2021" (day first)
+            const dayFirstPattern = /^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})$/;
+            const dayFirstMatch = date.match(dayFirstPattern);
+            
+            if (dayFirstMatch) {
+                const day = dayFirstMatch[1];
+                const monthName = dayFirstMatch[2].toLowerCase();
+                const year = dayFirstMatch[3];
+                
+                if (monthNames[monthName]) {
+                    const month = monthNames[monthName];
+                    return `${month}-${day.padStart(2, '0')}-${year}`;
+                }
+            }
+            
+            // Format: "08/04/2020" or "8/4/2020" or "24/11/2020"
+            if (date.includes('/')) {
+                const parts = date.split('/');
+                if (parts.length === 3) {
+                    let month, day, year;
+                    
+                    // If first part is > 12, it must be day (DD/MM/YYYY format)
+                    if (parseInt(parts[0]) > 12) {
+                        day = parts[0].padStart(2, '0');
+                        month = parts[1].padStart(2, '0');
+                        year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
+                    }
+                    // If second part is > 12, it must be day (MM/DD/YYYY format)
+                    else if (parseInt(parts[1]) > 12) {
+                        month = parts[0].padStart(2, '0');
+                        day = parts[1].padStart(2, '0');
+                        year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
+                    }
+                    // Both could be valid - assume MM/DD/YYYY (US format)
+                    else {
+                        month = parts[0].padStart(2, '0');
+                        day = parts[1].padStart(2, '0');
+                        year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
+                    }
+                    
+                    // Validate it's a real date
+                    dateObj = new Date(year, month - 1, day);
+                    if (!isNaN(dateObj)) {
+                        return `${month}-${day}-${year}`;
+                    }
+                }
+            }
+            
+            // Format: "08-04-2020" or "2020-08-04" or "24-11-2020"
+            if (date.includes('-')) {
+                const parts = date.split('-');
+                if (parts.length === 3) {
+                    let month, day, year;
+                    
+                    // Check if year is first (YYYY-MM-DD)
+                    if (parts[0].length === 4) {
+                        year = parts[0];
+                        month = parts[1].padStart(2, '0');
+                        day = parts[2].padStart(2, '0');
+                    } 
+                    // Check if first part > 12 (must be day in DD-MM-YYYY)
+                    else if (parseInt(parts[0]) > 12) {
+                        day = parts[0].padStart(2, '0');
+                        month = parts[1].padStart(2, '0');
+                        year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
+                    }
+                    // Check if second part > 12 (must be day in MM-DD-YYYY)
+                    else if (parseInt(parts[1]) > 12) {
+                        month = parts[0].padStart(2, '0');
+                        day = parts[1].padStart(2, '0');
+                        year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
+                    }
+                    // Ambiguous - assume MM-DD-YYYY (US format)
+                    else {
+                        month = parts[0].padStart(2, '0');
+                        day = parts[1].padStart(2, '0');
+                        year = parts[2].length === 2 ? '20' + parts[2] : parts[2];
+                    }
+                    
+                    return `${month}-${day}-${year}`;
+                }
+            }
+            
+            // Format: "20200804" (YYYYMMDD)
+            if (/^\d{8}$/.test(date) && date.substring(0, 4) >= 1900) {
+                const year = date.substring(0, 4);
+                const month = date.substring(4, 6);
+                const day = date.substring(6, 8);
+                return `${month}-${day}-${year}`;
+            }
+            
+            // Format: "08042020" (MMDDYYYY)
+            if (/^\d{8}$/.test(date)) {
+                const month = date.substring(0, 2);
+                const day = date.substring(2, 4);
+                const year = date.substring(4, 8);
+                // Validate month is 01-12
+                if (parseInt(month) >= 1 && parseInt(month) <= 12) {
+                    return `${month}-${day}-${year}`;
+                }
+            }
+            
+            // If nothing matches, try to parse with Date object as last resort
+            dateObj = new Date(date);
+            if (!isNaN(dateObj)) {
+                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                const year = dateObj.getFullYear();
+                return `${month}-${day}-${year}`;
+            }
+            
+            // Return original if no format matches
+            console.warn(`Could not parse date: "${date}"`);
+            return date;
+        }
+
+        function formatSSN(ssn) {
+            if (!ssn) return '';
+            const cleaned = ssn.replace(/\D/g, '');
+            if (cleaned.length === 9) {
+                return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 5)}-${cleaned.slice(5)}`;
+            }
+            return ssn;
+        }
+
+        function processCSV(csvText) {
+            // Use Papa Parse library for robust CSV parsing
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js';
+            
+            return new Promise((resolve) => {
+                script.onload = () => {
+                    const result = Papa.parse(csvText, {
+                        header: true,
+                        skipEmptyLines: true,
+                        dynamicTyping: false, // Keep everything as strings
+                        transformHeader: (header) => header.trim(),
+                        transform: (value) => value ? value.trim() : ''
+                    });
+                    
+                    console.log('Parsed headers:', result.meta.fields);
+                    console.log('Sample parsed row:', result.data[0]);
+                    
+                    // Check for parsing errors
+                    if (result.errors.length > 0) {
+                        console.warn('CSV parsing warnings:', result.errors);
+                    }
+                    
+                    resolve({ 
+                        headers: result.meta.fields, 
+                        data: result.data 
+                    });
+                };
+                
+                // Fallback to manual parsing if Papa Parse fails to load
+                script.onerror = () => {
+                    console.log('Papa Parse failed to load, using fallback parser');
+                    resolve(manualCSVParse(csvText));
+                };
+                
+                document.head.appendChild(script);
+            });
+        }
+        
+        function manualCSVParse(csvText) {
+            // Fallback manual parser with better comma handling
+            const lines = csvText.split(/\r?\n/);
+            const headers = [];
+            const data = [];
+            
+            // Parse headers - assuming they don't have commas
+            if (lines.length > 0) {
+                headers.push(...lines[0].split(',').map(h => h.trim()));
+            }
+            
+            // For data rows, count commas to detect issues
+            const expectedColumns = headers.length;
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let j = 0; j < lines[i].length; j++) {
+                    const char = lines[i][j];
+                    
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current.trim());
+                
+                // Check if we have the right number of columns
+                if (values.length !== expectedColumns) {
+                    console.error(`Row ${i + 1} has ${values.length} columns, expected ${expectedColumns}. Row content:`, lines[i]);
+                    
+                    // Try to fix common issues
+                    if (values.length > expectedColumns) {
+                        // Too many values - likely unquoted commas
+                        // Try to merge fields that might belong together
+                        console.log('Attempting to fix row with too many columns');
+                    }
+                }
+                
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+                
+                data.push(row);
+            }
+            
+            return { headers, data };
+        }
+
+        function createCRMFile(data) {
+            const crmHeaders = [
+                'First Name', 'Last Name', 'Phone Number', 'Cell Phone', 
+                'Company Name', 'Email', 'Lead Source', 'Address', 
+                'City', 'State', 'Zip', 'Business Type', 'Annual Revenue', 
+                'Funding', 'Factor Rate', 'Funding Date', 'Term', 'Notes', 
+                'Campaign', 'TaxID', 'SSN', 'Business Start Date', 'DOB'
+            ];
+
+            const rows = [crmHeaders.join(',')];
+
+            data.forEach((row, index) => {
+                // Get owner name - your CSV uses "Owner Name"
+                const ownerName = row['Owner Name'] || '';
+                
+                // Extra validation: check if SSN appears in owner name field
+                const ssnPattern = /^\d{3}-?\d{2}-?\d{4}$/;
+                if (ssnPattern.test(ownerName.replace(/\s/g, ''))) {
+                    console.error(`Row ${index + 2}: SSN found in Owner Name field! Data may be shifted. Company: ${row['Company Name']}`);
+                    console.error('Row data:', row);
+                    // Skip this row or flag for manual review
+                }
+                
+                // Check if owner name is numeric
+                if (/^\d{9,}$/.test(ownerName.replace(/\D/g, ''))) {
+                    console.error(`Row ${index + 2}: Owner Name contains only numbers: "${ownerName}". Company: ${row['Company Name']}`);
+                }
+                
+                const nameParts = ownerName.trim().split(/\s+/);
+                const firstName = nameParts[0] || '';
+                const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+                
+                // Your CSV uses "Mobile" for phone, with "Phone Number" as separate field
+                const mobilePhone = formatPhoneNumber(row['Mobile'] || '');
+                const officePhone = formatPhoneNumber(row['Phone Number'] || '');
+                // Use mobile if available, otherwise use office phone
+                const phone = mobilePhone || officePhone;
+
+                const crmRow = [
+                    firstName,
+                    lastName,
+                    phone,  // Phone Number field
+                    phone,  // Cell Phone field (same as phone per your rules)
+                    row['Company Name'] || '',
+                    row['Email'] || '',
+                    'WEB',  // Lead Source always WEB
+                    row['Address'] || '',
+                    row['City'] || '',
+                    row['State'] || '',
+                    row['Zip'] || '',
+                    '', // Business Type - always blank per your rules (even though source has it)
+                    '', // Annual Revenue - always blank per your rules
+                    '', // Funding - not in source
+                    '', // Factor Rate - not in source
+                    '', // Funding Date - not in source
+                    '', // Term - not in source
+                    row['Monthly Revenue'] || '', // Put Monthly Revenue in Notes field
+                    '', // Campaign - not in source
+                    row['TaxID'] || '',
+                    formatSSN(row['SSN'] || ''),
+                    formatDate(row['Business Start Date'] || ''),
+                    formatDate(row['DOB'] || '')
+                ];
+
+                rows.push(crmRow.map(val => `"${val}"`).join(','));
+            });
+
+            return rows.join('\n');
+        }
+
+        function createNameOnlyFile(data) {
+            const rows = [];
+
+            data.forEach(row => {
+                const ownerName = row['Owner Name'] || '';
+                const nameParts = ownerName.trim().split(/\s+/);
+                const firstName = nameParts[0] || '';
+                
+                // Use Mobile first, then Phone Number as fallback
+                const mobilePhone = formatPhoneNumber(row['Mobile'] || '');
+                const officePhone = formatPhoneNumber(row['Phone Number'] || '');
+                const phone = mobilePhone || officePhone;
+                
+                if (firstName && phone && !/^\d+$/.test(firstName)) {
+                    rows.push(`${firstName},${phone}`);
+                }
+            });
+
+            return rows.join('\n');
+        }
+
+        function createPhoneBurnerFile(data) {
+            const headers = ['First Name', 'Last Name', 'Phone', 'Company', 'Email'];
+            const rows = [headers.join(',')];
+
+            data.forEach(row => {
+                const ownerName = row['Owner Name'] || '';
+                const nameParts = ownerName.trim().split(/\s+/);
+                const firstName = nameParts[0] || '';
+                const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+                
+                // Use Mobile first, then Phone Number as fallback
+                const mobilePhone = formatPhoneNumber(row['Mobile'] || '');
+                const officePhone = formatPhoneNumber(row['Phone Number'] || '');
+                const phone = mobilePhone || officePhone;
+
+                // Only add row if it has a valid name (not just numbers)
+                if (firstName && !/^\d+$/.test(firstName)) {
+                    const pbRow = [
+                        firstName,
+                        lastName,
+                        phone,
+                        row['Company Name'] || '',
+                        row['Email'] || ''
+                    ];
+
+                    rows.push(pbRow.map(val => `"${val}"`).join(','));
+                }
+            });
+
+            return rows.join('\n');
+        }
+
+        async function handleFile(file) {
+            showStatus('Processing file... 🔄', 'processing');
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const csvText = e.target.result;
+                const { data } = await processCSV(csvText);
+
+                if (webhookUrl.value) {
+                    // Send to webhook for server processing
+                    try {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        
+                        const response = await fetch(webhookUrl.value, {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            
+                            // Assuming the webhook returns the processed files
+                            if (result.crmFile && result.nameOnlyFile && result.phoneBurnerFile) {
+                                setupDownloads(result.crmFile, result.nameOnlyFile, result.phoneBurnerFile);
+                                showStatus('Files processed successfully! ✅', 'success');
+                            } else {
+                                throw new Error('Invalid response from webhook');
+                            }
+                        } else {
+                            throw new Error('Webhook processing failed');
+                        }
+                    } catch (error) {
+                        console.error('Webhook error:', error);
+                        // Fall back to client-side processing
+                        processLocally(data);
+                    }
+                } else {
+                    // Process locally
+                    processLocally(data);
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        function processLocally(data) {
+            const crmFile = createCRMFile(data);
+            const nameOnlyFile = createNameOnlyFile(data);
+            const phoneBurnerFile = createPhoneBurnerFile(data);
+
+            setupDownloads(crmFile, nameOnlyFile, phoneBurnerFile);
+            showStatus('Files processed successfully! ✅', 'success');
+        }
+
+        function setupDownloads(crmFile, nameOnlyFile, phoneBurnerFile) {
+            // Create download links
+            const crmBlob = new Blob([crmFile], { type: 'text/csv' });
+            const nameOnlyBlob = new Blob([nameOnlyFile], { type: 'text/csv' });
+            const phoneBurnerBlob = new Blob([phoneBurnerFile], { type: 'text/csv' });
+
+            document.getElementById('crmDownload').href = URL.createObjectURL(crmBlob);
+            document.getElementById('crmDownload').download = 'crm_import_' + Date.now() + '.csv';
+
+            document.getElementById('nameOnlyDownload').href = URL.createObjectURL(nameOnlyBlob);
+            document.getElementById('nameOnlyDownload').download = 'name_only_' + Date.now() + '.csv';
+
+            document.getElementById('phoneBurnerDownload').href = URL.createObjectURL(phoneBurnerBlob);
+            document.getElementById('phoneBurnerDownload').download = 'phoneburner_' + Date.now() + '.csv';
+
+            downloadSection.style.display = 'block';
+            instructions.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

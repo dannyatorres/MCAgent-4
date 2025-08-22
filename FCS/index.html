@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCAgent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            border-color: #5568d3;
+            background: #f0f3ff;
+        }
+        
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: #e8f5e9;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .upload-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+        
+        .upload-text {
+            color: #555;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+        
+        .upload-subtext {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .file-list {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .file-item-name {
+            flex: 1;
+            margin-left: 10px;
+            font-size: 14px;
+        }
+        
+        .file-item-size {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .remove-file {
+            color: #dc3545;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .folder-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+        
+        .folder-item {
+            padding: 12px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+        
+        .folder-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        }
+        
+        .folder-icon {
+            color: #667eea;
+            font-size: 20px;
+        }
+        
+        .folder-name {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .folder-count {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #218838;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .status.show {
+            display: block;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            flex: 1;
+        }
+        
+        .input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .workflow-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .workflow-info h4 {
+            margin-bottom: 10px;
+            color: #555;
+        }
+        
+        .workflow-info p {
+            font-size: 13px;
+            color: #666;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span>📊</span>
+                MCAgent
+            </h1>
+            <p class="subtitle">Automated Bank Statement Processing System</p>
+        </div>
+        
+        <div class="main-grid">
+            <!-- Left Panel - Upload and Folders -->
+            <div class="card">
+                <h3 class="card-title">📤 Upload Bank Statements</h3>
+                
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Click to upload or drag & drop PDF files</div>
+                    <div class="upload-subtext">Bank statement PDFs only • Multiple files supported</div>
+                    <input type="file" id="fileInput" class="file-input" accept=".pdf" multiple onchange="handleFileSelect(event)">
+                </div>
+                
+                <div id="fileList" class="file-list" style="display: none;"></div>
+                
+                <div style="margin-top: 20px; display: none;" id="uploadControls">
+                    <input type="text" id="businessNameInput" class="input" placeholder="Enter business name (e.g., ABC Corporation)" style="margin-bottom: 10px;">
+                    <button class="btn btn-secondary" onclick="uploadToGoogleDrive()" style="width: 100%;">
+                        ☁️ Upload to Google Drive
+                    </button>
+                </div>
+                
+                <div id="uploadStatus" class="status"></div>
+                
+                <!-- Folders Section -->
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #f0f0f0;">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-value" id="folderCount">0</div>
+                            <div class="stat-label">Total Folders</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="lastRefresh">--</div>
+                            <div class="stat-label">Last Refresh</div>
+                        </div>
+                    </div>
+                    
+                    <div class="controls">
+                        <button class="btn btn-secondary" onclick="checkFolders()">
+                            🔄 Refresh Folders
+                        </button>
+                    </div>
+                    
+                    <div id="folderListContainer">
+                        <div class="folder-list" id="folderList">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📂</div>
+                                <p style="font-size: 12px; margin-top: 10px;">No folders loaded</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="folderStatus" class="status"></div>
+                </div>
+            </div>
+            
+            <!-- Workflow Control Panel -->
+            <div class="card">
+                <h3 class="card-title">📈 File Control Sheet Analysis</h3>
+                
+                <input 
+                    type="hidden" 
+                    id="webhookUrl" 
+                    value="https://dannyatorres.app.n8n.cloud/webhook/mca-processor"
+                />
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="margin: 0 0 10px 0; color: #333; font-weight: 600;">Report Includes:</p>
+                    <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.6;">
+                        • Monthly deposits & true revenue<br>
+                        • MCA positions & payment amounts<br>
+                        • Negative days & cash flow analysis<br>
+                        • Business profile & underwriting metrics
+                    </p>
+                    <p style="margin: 10px 0 0 0; font-size: 13px; color: #666; font-style: italic;">
+                        📧 Emailed to fcs@jmsglobal.biz
+                    </p>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="processAll" checked>
+                    <label for="processAll">Process all folders in workflow directory</label>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button id="triggerBtn" class="btn btn-primary" onclick="triggerWorkflow()" style="width: 100%;">
+                        📊 Run FCS Reports
+                    </button>
+                </div>
+                
+                <div id="workflowStatus" class="status"></div>
+                
+                <div class="workflow-info">
+                    <h4>Processing Steps:</h4>
+                    <p>✓ Scans business folders in Google Drive</p>
+                    <p>✓ Downloads PDF bank statements</p>
+                    <p>✓ Extracts text using Document AI</p>
+                    <p>✓ Analyzes for MCA underwriting</p>
+                    <p>✓ Generates comprehensive FCS report</p>
+                    <p>✓ Emails results to fcs@jmsglobal.biz</p>
+                    <p>✓ Removes processed folders</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store folder data
+        let foldersData = [];
+        let selectedFiles = [];
+        
+        // Handle file selection
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            addFiles(files);
+        }
+        
+        // Handle drag and drop
+        const uploadArea = document.getElementById('uploadArea');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            addFiles(files);
+        });
+        
+        // Add files to the list
+        function addFiles(files) {
+            const fileList = document.getElementById('fileList');
+            const uploadControls = document.getElementById('uploadControls');
+            
+            for (let file of files) {
+                if (file.type === 'application/pdf') {
+                    selectedFiles.push(file);
+                }
+            }
+            
+            displayFiles();
+            
+            if (selectedFiles.length > 0) {
+                fileList.style.display = 'block';
+                uploadControls.style.display = 'block';
+            }
+        }
+        
+        // Display selected files
+        function displayFiles() {
+            const fileList = document.getElementById('fileList');
+            
+            if (selectedFiles.length === 0) {
+                fileList.style.display = 'none';
+                document.getElementById('uploadControls').style.display = 'none';
+                return;
+            }
+            
+            let html = '';
+            selectedFiles.forEach((file, index) => {
+                const size = (file.size / 1024 / 1024).toFixed(2);
+                html += `
+                    <div class="file-item">
+                        <span>📄</span>
+                        <span class="file-item-name">${file.name}</span>
+                        <span class="file-item-size">${size} MB</span>
+                        <span class="remove-file" onclick="removeFile(${index})">✕</span>
+                    </div>
+                `;
+            });
+            
+            fileList.innerHTML = html;
+        }
+        
+        // Remove file from list
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            displayFiles();
+        }
+        
+        // Upload files to Google Drive via n8n
+        async function uploadToGoogleDrive() {
+            const businessName = document.getElementById('businessNameInput').value;
+            const statusDiv = document.getElementById('uploadStatus');
+            
+            if (!businessName) {
+                showStatus(statusDiv, 'Please enter a business name', 'error');
+                return;
+            }
+            
+            if (selectedFiles.length === 0) {
+                showStatus(statusDiv, 'Please select files to upload', 'error');
+                return;
+            }
+            
+            showStatus(statusDiv, 'Converting files to base64...', 'info');
+            
+            // Convert files to base64
+            const fileData = [];
+            for (let file of selectedFiles) {
+                const base64 = await fileToBase64(file);
+                fileData.push({
+                    name: file.name,
+                    content: base64,
+                    mimeType: 'application/pdf'
+                });
+            }
+            
+            showStatus(statusDiv, 'Uploading to Google Drive...', 'info');
+            
+            // Send to n8n webhook
+            const uploadUrl = 'https://dannyatorres.app.n8n.cloud/webhook/upload-pdfs';
+            
+            try {
+                const response = await fetch(uploadUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        businessName: businessName,
+                        files: fileData
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    showStatus(statusDiv, `✅ Successfully uploaded ${selectedFiles.length} files to Google Drive!`, 'success');
+                    
+                    // Clear the form
+                    selectedFiles = [];
+                    displayFiles();
+                    document.getElementById('businessNameInput').value = '';
+                    document.getElementById('fileInput').value = '';
+                    
+                    // Refresh folders after upload
+                    setTimeout(() => checkFolders(), 2000);
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (error) {
+                // Try no-cors mode
+                try {
+                    await fetch(uploadUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            businessName: businessName,
+                            files: fileData
+                        })
+                    });
+                    
+                    showStatus(statusDiv, '✅ Files sent to Google Drive. Refreshing folders...', 'success');
+                    
+                    // Clear and refresh
+                    selectedFiles = [];
+                    displayFiles();
+                    document.getElementById('businessNameInput').value = '';
+                    document.getElementById('fileInput').value = '';
+                    
+                    setTimeout(() => checkFolders(), 3000);
+                } catch (noCorsError) {
+                    showStatus(statusDiv, 'Upload error. Make sure the upload webhook is active in n8n.', 'error');
+                }
+            }
+        }
+        
+        // Convert file to base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    // Remove the data:application/pdf;base64, prefix
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+        
+        // Check folders from Google Drive
+        async function checkFolders() {
+            const statusDiv = document.getElementById('folderStatus');
+            showStatus(statusDiv, 'Fetching folders from Google Drive...', 'info');
+            
+            // Use the list-folders endpoint
+            const baseUrl = document.getElementById('webhookUrl').value;
+            const checkUrl = baseUrl.replace('/mca-processor', '/list-folders');
+            
+            console.log('Fetching folders from:', checkUrl);
+            
+            try {
+                const response = await fetch(checkUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    try {
+                        const text = await response.text();
+                        
+                        // Check if response is empty or just whitespace
+                        if (!text || text.trim().length === 0) {
+                            displayFolders([]);
+                            showStatus(statusDiv, 'No folders in workflow directory', 'info');
+                            return;
+                        }
+                        
+                        // Try to parse JSON
+                        const data = JSON.parse(text);
+                        console.log('Received folder data:', data);
+                        
+                        if (data.folders && Array.isArray(data.folders)) {
+                            if (data.folders.length === 0) {
+                                displayFolders([]);
+                            } else {
+                                displayFolders(data.folders);
+                                showStatus(statusDiv, `✅ Loaded ${data.folders.length} folders from Google Drive`, 'success');
+                            }
+                        } else {
+                            displayFolders([]);
+                        }
+                    } catch (parseError) {
+                        console.error('Error parsing response:', parseError);
+                        displayFolders([]);
+                        showStatus(statusDiv, 'No folders found', 'info');
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('Error fetching folders:', error);
+                
+                // If CORS error or fetch fails, try a different approach
+                if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+                    showStatus(statusDiv, 'CORS error - trying alternative method...', 'info');
+                    
+                    // Try with no-cors mode (won't be able to read response)
+                    fetch(checkUrl, { method: 'GET', mode: 'no-cors' })
+                        .then(() => {
+                            showStatus(statusDiv, 'Request sent. Check n8n logs. Loading sample data for now.', 'info');
+                            setTimeout(() => simulateFolders(), 1000);
+                        })
+                        .catch(() => {
+                            showStatus(statusDiv, 'Could not connect. Ensure the list-folders webhook is set up in n8n.', 'error');
+                        });
+                } else {
+                    showStatus(statusDiv, `Error: ${error.message}. Make sure the list-folders webhook is active.`, 'error');
+                }
+            }
+        }
+        
+        // Simulate folder data for demonstration
+        function simulateFolders() {
+            const sampleFolders = [
+                { name: 'ABC Corporation', files: 3 },
+                { name: 'XYZ Enterprises', files: 5 },
+                { name: 'Smith Holdings LLC', files: 4 },
+                { name: 'Johnson & Associates', files: 6 },
+                { name: 'Global Tech Solutions', files: 3 },
+                { name: 'Prime Retail Group', files: 4 }
+            ];
+            
+            displayFolders(sampleFolders);
+            showStatus(document.getElementById('folderStatus'), 'Sample data loaded (demonstration)', 'success');
+        }
+        
+        // Display folders in the list
+        function displayFolders(folders) {
+            foldersData = folders;
+            const listContainer = document.getElementById('folderList');
+            const folderCount = document.getElementById('folderCount');
+            const lastRefresh = document.getElementById('lastRefresh');
+            
+            if (folders.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📂</div>
+                        <p>No folders found</p>
+                    </div>
+                `;
+                folderCount.textContent = '0';
+                showStatus(document.getElementById('folderStatus'), 'No folders found in workflow directory', 'info');
+                return;
+            }
+            
+            // Update stats
+            folderCount.textContent = folders.length;
+            lastRefresh.textContent = new Date().toLocaleTimeString();
+            
+            // Build folder list HTML
+            let html = '';
+            folders.forEach(folder => {
+                html += `
+                    <div class="folder-item">
+                        <span class="folder-icon">📁</span>
+                        <span class="folder-name">${folder.name}</span>
+                    </div>
+                `;
+            });
+            
+            listContainer.innerHTML = html;
+        }
+        
+        // Trigger workflow
+        async function triggerWorkflow() {
+            const btn = document.getElementById('triggerBtn');
+            const statusDiv = document.getElementById('workflowStatus');
+            const url = document.getElementById('webhookUrl').value;
+            
+            if (!url) {
+                showStatus(statusDiv, 'Please enter webhook URL', 'error');
+                return;
+            }
+            
+            // Update button
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>Processing...';
+            
+            showStatus(statusDiv, 'Triggering workflow...', 'info');
+            
+            try {
+                // Send empty POST to trigger folder scan
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        source: 'dashboard',
+                        timestamp: new Date().toISOString(),
+                        folderCount: foldersData.length
+                    })
+                });
+                
+                if (response.ok || response.status === 0) {
+                    showStatus(statusDiv, `✅ Workflow triggered! Processing ${foldersData.length || 'all'} folders. Check n8n for execution status.`, 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                // Try no-cors mode
+                if (error.message.includes('Failed to fetch')) {
+                    try {
+                        await fetch(url, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({})
+                        });
+                        showStatus(statusDiv, '✅ Workflow triggered! Check n8n and your email for results.', 'success');
+                    } catch (noCorsError) {
+                        showStatus(statusDiv, 'Connection error. Check if n8n is running.', 'error');
+                    }
+                } else {
+                    showStatus(statusDiv, `Error: ${error.message}`, 'error');
+                }
+            } finally {
+                // Reset button
+                btn.disabled = false;
+                btn.innerHTML = '📊 Run FCS Reports';
+            }
+        }
+        
+        // Show status message
+        function showStatus(element, message, type) {
+            element.textContent = message;
+            element.className = `status show ${type}`;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    element.className = 'status';
+                }, 5000);
+            }
+        }
+        
+        // Save/load settings
+        window.addEventListener('load', function() {
+            const saved = localStorage.getItem('mca_webhook_url');
+            if (saved) {
+                document.getElementById('webhookUrl').value = saved;
+            }
+            
+            // Don't load sample data on start
+        });
+        
+        document.getElementById('webhookUrl').addEventListener('change', function() {
+            localStorage.setItem('mca_webhook_url', this.value);
+        });
+    </script>
+</body>
+</html>
