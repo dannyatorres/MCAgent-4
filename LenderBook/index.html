@@ -372,7 +372,7 @@
                     
                     <div class="form-group">
                         <label for="startDate">Business Start Date *</label>
-                        <input type="text" id="startDate" placeholder="MM/DD/YYYY" required>
+                        <input type="text" id="startDate" placeholder="MM/DD/YYYY or MM-DD-YYYY" required>
                         <div id="tibDisplay" class="tib-display" style="display: none;"></div>
                     </div>
                 </div>
@@ -463,9 +463,10 @@
         // N8N Webhook URL - CHANGE THIS WHEN YOU ACTIVATE THE WORKFLOW
         const N8N_WEBHOOK_URL = 'https://dannyatorres.app.n8n.cloud/webhook/lender-qualify';
         
-        // Calculate TIB from date
+        // Calculate TIB from date - supports both / and - separators
         function calculateTIB(dateString) {
-            const datePattern = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+            // Match both MM/DD/YYYY and MM-DD-YYYY formats (with optional leading zeros)
+            const datePattern = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/;
             const match = dateString.match(datePattern);
             
             if (match) {
