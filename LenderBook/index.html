@@ -51,6 +51,110 @@
             padding: 24px;
         }
 
+        .quick-fill-section {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .quick-fill-toggle {
+            width: 100%;
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .quick-fill-toggle:hover {
+            background: #0284c7;
+        }
+
+        #quickFillIcon {
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+
+        #quickFillIcon.open {
+            transform: rotate(-180deg);
+        }
+
+        .quick-fill-content {
+            padding: 20px;
+            display: none;
+        }
+
+        .quick-fill-content.active {
+            display: block;
+        }
+
+        #summaryPaste {
+            width: 100%;
+            min-height: 200px;
+            padding: 12px;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            resize: vertical;
+            background: white;
+        }
+
+        #summaryPaste:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        .parse-btn {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .parse-btn:hover {
+            background: #0284c7;
+            transform: translateY(-1px);
+        }
+
+        .parse-status {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .parse-status.success {
+            display: block;
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .parse-status.warning {
+            display: block;
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #f59e0b;
+        }
+
         .merchant-form {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -346,6 +450,18 @@
         </div>
         
         <div class="main-content">
+            <!-- Quick Fill Section -->
+            <div class="quick-fill-section">
+                <button type="button" class="quick-fill-toggle" onclick="toggleQuickFill()">
+                    <span id="quickFillIcon">▼</span> Quick Fill from 3-Month Summary
+                </button>
+                <div id="quickFillContent" class="quick-fill-content">
+                    <textarea id="summaryPaste" placeholder="Paste your 3-month summary here...&#10;&#10;Example:&#10;- Business Name: LOS ALTOS LLC DBA ZAPATA'S MEXICAN GRILL&#10;- Position (ASSUME NEXT): 3 active -> Looking for 4th&#10;- Industry: Restaurant&#10;..."></textarea>
+                    <button type="button" class="parse-btn" onclick="parseSummary()">📋 Parse & Fill Form</button>
+                    <div id="parseStatus" class="parse-status"></div>
+                </div>
+            </div>
+            
             <form id="merchantForm" class="merchant-form">
                 <div class="form-row">
                     <div class="form-group">
@@ -462,6 +578,123 @@
     <script>
         // N8N Webhook URL - CHANGE THIS WHEN YOU ACTIVATE THE WORKFLOW
         const N8N_WEBHOOK_URL = 'https://dannyatorres.app.n8n.cloud/webhook/lender-qualify';
+        
+        // Toggle Quick Fill section
+        function toggleQuickFill() {
+            const content = document.getElementById('quickFillContent');
+            const icon = document.getElementById('quickFillIcon');
+            content.classList.toggle('active');
+            icon.classList.toggle('open');
+        }
+        
+        // Parse summary and fill form
+        function parseSummary() {
+            const summary = document.getElementById('summaryPaste').value;
+            const status = document.getElementById('parseStatus');
+            
+            if (!summary.trim()) {
+                status.className = 'parse-status warning';
+                status.textContent = '⚠️ Please paste a summary first';
+                return;
+            }
+            
+            const parsed = {
+                found: [],
+                missing: []
+            };
+            
+            // Extract Business Name
+            const businessMatch = summary.match(/Business Name:\s*(.+?)(?:\n|$)/i);
+            if (businessMatch) {
+                document.getElementById('businessName').value = businessMatch[1].trim();
+                parsed.found.push('Business Name');
+            } else {
+                parsed.missing.push('Business Name');
+            }
+            
+            // Extract Position (looking for "Looking for Xth" or "X active -> Looking for Xth")
+            const positionMatch = summary.match(/Looking for (\d+)(?:st|nd|rd|th)/i);
+            if (positionMatch) {
+                document.getElementById('position').value = positionMatch[1];
+                parsed.found.push('Position');
+            } else {
+                parsed.missing.push('Position');
+            }
+            
+            // Extract Industry
+            const industryMatch = summary.match(/Industry:\s*(.+?)(?:\n|$)/i);
+            if (industryMatch) {
+                document.getElementById('industry').value = industryMatch[1].trim();
+                parsed.found.push('Industry');
+            } else {
+                parsed.missing.push('Industry');
+            }
+            
+            // Extract Revenue (Average True Revenue)
+            const revenueMatch = summary.match(/Average True Revenue:\s*\$?([\d,]+\.?\d*)/i);
+            if (revenueMatch) {
+                const revenue = revenueMatch[1].replace(/,/g, '');
+                document.getElementById('revenue').value = Math.round(parseFloat(revenue));
+                parsed.found.push('Revenue');
+            } else {
+                parsed.missing.push('Revenue');
+            }
+            
+            // Extract State
+            const stateMatch = summary.match(/State:\s*([A-Z]{2})/i);
+            if (stateMatch) {
+                document.getElementById('state').value = stateMatch[1].toUpperCase();
+                parsed.found.push('State');
+            } else {
+                parsed.missing.push('State');
+            }
+            
+            // Extract Average Negative Days
+            const negDaysMatch = summary.match(/Average Negative Days:\s*(\d+)/i);
+            if (negDaysMatch) {
+                document.getElementById('negativeDays').value = negDaysMatch[1];
+                parsed.found.push('Negative Days');
+            }
+            
+            // Extract Average Number of Deposits
+            const depositsMatch = summary.match(/Average Number of Deposits:\s*(\d+)/i);
+            if (depositsMatch) {
+                document.getElementById('depositsPerMonth').value = depositsMatch[1];
+                parsed.found.push('Deposits/Month');
+            }
+            
+            // Extract Current Positions
+            const positionsMatch = summary.match(/Positions:\s*(.+?)(?:\n|$)/i);
+            if (positionsMatch) {
+                document.getElementById('currentPositions').value = positionsMatch[1].trim();
+                parsed.found.push('Current Positions');
+            }
+            
+            // Extract Last MCA Deposit and add to notes
+            const mcaMatch = summary.match(/Last MCA Deposit:\s*(.+?)(?:\n|$)/i);
+            if (mcaMatch) {
+                const currentNotes = document.getElementById('additionalNotes').value;
+                const mcaInfo = mcaMatch[1].trim();
+                const newNotes = currentNotes ? `${currentNotes}\n\nLast MCA Deposit: ${mcaInfo}` : `Last MCA Deposit: ${mcaInfo}`;
+                document.getElementById('additionalNotes').value = newNotes;
+                parsed.found.push('Last MCA Deposit');
+            }
+            
+            // Show status
+            if (parsed.found.length > 0) {
+                status.className = 'parse-status success';
+                let message = `✅ Successfully filled: ${parsed.found.join(', ')}`;
+                if (parsed.missing.length > 0) {
+                    message += `\n\n⚠️ Manual entry needed: ${parsed.missing.join(', ')}, FICO Score, Start Date, Sales Rep`;
+                } else {
+                    message += `\n\n⚠️ Manual entry needed: FICO Score, Start Date, Sales Rep`;
+                }
+                status.textContent = message;
+            } else {
+                status.className = 'parse-status warning';
+                status.textContent = '⚠️ Could not parse summary. Please check format and try again.';
+            }
+        }
         
         // Calculate TIB from date - supports both / and - separators
         function calculateTIB(dateString) {
