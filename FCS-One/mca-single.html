@@ -3,268 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCAgent</title>
+    <title>FCS Single Processor - MCAgent</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f7;
             min-height: 100vh;
-            padding: 20px;
+            padding: 30px 20px;
         }
-        
+
         .container {
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
         }
-        
+
         .header {
             background: white;
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            border-radius: 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            border: 1px solid rgba(0,0,0,0.04);
         }
-        
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: #007aff;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .back-btn:hover {
+            opacity: 0.7;
+        }
+
         h1 {
-            color: #333;
-            margin-bottom: 10px;
+            color: #1d1d1f;
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
-        
+
         .subtitle {
-            color: #666;
-            font-size: 14px;
+            color: #86868b;
+            font-size: 1rem;
+            font-weight: 400;
+            margin-top: 8px;
         }
-        
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        
-        .upload-area {
-            border: 2px dashed #667eea;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            background: #f8f9ff;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .upload-area:hover {
-            border-color: #5568d3;
-            background: #f0f3ff;
-        }
-        
-        .upload-area.dragover {
-            border-color: #28a745;
-            background: #e8f5e9;
-        }
-        
-        .file-input {
-            display: none;
-        }
-        
-        .upload-icon {
-            font-size: 36px;
-            margin-bottom: 8px;
-        }
-        
-        .upload-text {
-            color: #555;
-            font-size: 15px;
-            margin-bottom: 8px;
-        }
-        
-        .upload-subtext {
-            color: #999;
-            font-size: 12px;
-        }
-        
-        .file-list {
-            margin-top: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
-        .file-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            margin-bottom: 8px;
-        }
-        
-        .file-item-name {
-            flex: 1;
-            margin-left: 10px;
-            font-size: 14px;
-        }
-        
-        .file-item-size {
-            color: #999;
-            font-size: 12px;
-        }
-        
-        .remove-file {
-            color: #dc3545;
-            cursor: pointer;
-            padding: 5px;
-        }
-        
-        @media (max-width: 768px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
+
         .card {
             background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            border: 1px solid rgba(0,0,0,0.04);
         }
-        
+
         .card-title {
-            font-size: 18px;
+            font-size: 1.3rem;
             font-weight: 600;
-            color: #333;
+            color: #1d1d1f;
             margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
+            letter-spacing: -0.3px;
         }
-        
+
         .folder-list {
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 10px;
-            background: #f9f9f9;
+            border-radius: 12px;
+            padding: 8px;
         }
-        
+
+        /* Custom scrollbar */
+        .folder-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .folder-list::-webkit-scrollbar-track {
+            background: #f5f5f7;
+            border-radius: 4px;
+        }
+
+        .folder-list::-webkit-scrollbar-thumb {
+            background: #d1d1d6;
+            border-radius: 4px;
+        }
+
+        .folder-list::-webkit-scrollbar-thumb:hover {
+            background: #b4b4b8;
+        }
+
         .folder-item {
-            padding: 12px;
-            margin: 5px 0;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #e0e0e0;
+            padding: 16px;
+            margin: 8px 0;
+            background: #f5f5f7;
+            border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             transition: all 0.2s;
+            border: 1px solid transparent;
         }
-        
+
         .folder-item:hover {
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+            background: #ececef;
+            border-color: #d1d1d6;
         }
-        
+
+        .folder-item.processing {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .folder-item.completed {
+            background: #d1f4e0;
+            border-color: #34c759;
+        }
+
+        .folder-item.error {
+            background: #ffe5e5;
+            border-color: #ff3b30;
+        }
+
         .folder-icon {
-            color: #667eea;
-            font-size: 20px;
+            font-size: 24px;
         }
-        
-        .folder-name {
+
+        .folder-info {
             flex: 1;
-            font-size: 14px;
-            color: #333;
         }
-        
-        .folder-count {
-            background: #667eea;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
+
+        .folder-name {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #1d1d1f;
+            margin-bottom: 4px;
         }
-        
+
+        .folder-status {
+            font-size: 0.85rem;
+            color: #86868b;
+        }
+
         .btn {
-            padding: 12px 30px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
-            margin: 5px;
+            font-family: inherit;
         }
-        
+
         .btn-primary {
-            background: #667eea;
+            background: #007aff;
             color: white;
         }
-        
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+        .btn-primary:hover:not(:disabled) {
+            background: #0051d5;
         }
-        
+
         .btn-secondary {
-            background: #28a745;
+            background: #34c759;
             color: white;
         }
-        
+
         .btn-secondary:hover {
-            background: #218838;
+            background: #2fb350;
         }
-        
-        .btn-danger {
-            background: #dc3545;
-            color: white;
+
+        .btn-subtle {
+            background: transparent;
+            color: #86868b;
+            border: 1px solid #d1d1d6;
+            padding: 8px 16px;
+            font-size: 0.85rem;
         }
-        
+
+        .btn-subtle:hover {
+            background: #f5f5f7;
+            color: #1d1d1f;
+            border-color: #b4b4b8;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
         .btn:disabled {
-            background: #ccc;
+            background: #d1d1d6;
             cursor: not-allowed;
-            transform: none;
+            opacity: 0.6;
         }
-        
+
         .status {
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 8px;
+            margin-top: 16px;
+            padding: 14px 18px;
+            border-radius: 10px;
             display: none;
+            font-size: 0.9rem;
         }
-        
+
         .status.show {
             display: block;
         }
-        
+
         .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: #d1f4e0;
+            color: #1d7a3a;
+            border: 1px solid #34c759;
         }
-        
+
         .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: #ffe5e5;
+            color: #d32f2f;
+            border: 1px solid #ff3b30;
         }
-        
+
         .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+            background: #e3f2fd;
+            color: #0277bd;
+            border: 1px solid #007aff;
         }
-        
+
         .loading {
             display: inline-block;
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border: 2px solid #ffffff;
             border-radius: 50%;
             border-top-color: transparent;
@@ -272,528 +261,493 @@
             margin-right: 8px;
             vertical-align: middle;
         }
-        
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-box {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-        
+
         .empty-state {
             text-align: center;
-            padding: 40px;
-            color: #999;
+            padding: 60px 20px;
+            color: #86868b;
         }
-        
+
         .empty-state-icon {
             font-size: 48px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            opacity: 0.5;
         }
-        
+
         .controls {
             display: flex;
-            gap: 10px;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #d1f4e0;
+            color: #1d7a3a;
+        }
+
+        .badge-processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-error {
+            background: #ffe5e5;
+            color: #d32f2f;
+        }
+
+        /* Upload Section Styles */
+        .upload-area {
+            border: 2px dashed #d1d1d6;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #f5f5f7 0%, #ffffff 100%);
+            cursor: pointer;
+            transition: all 0.3s;
             margin-bottom: 20px;
         }
-        
-        .input-group {
-            flex: 1;
+
+        .upload-area:hover {
+            border-color: #007aff;
+            background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+            transform: translateY(-2px);
         }
-        
-        .input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
+
+        .upload-area.drag-over {
+            border-color: #007aff;
+            background: #e3f2fd;
+            transform: scale(1.02);
         }
-        
-        .input:focus {
-            outline: none;
-            border-color: #667eea;
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            animation: float 3s ease-in-out infinite;
         }
-        
-        .checkbox-group {
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .file-list {
+            margin: 20px 0;
+        }
+
+        .file-item {
+            background: #f5f5f7;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin: 8px 0;
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-top: 15px;
+            gap: 12px;
+            transition: all 0.2s;
         }
-        
-        .workflow-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
+
+        .file-item:hover {
+            background: #ececef;
         }
-        
-        .workflow-info h4 {
-            margin-bottom: 10px;
-            color: #555;
+
+        .file-info {
+            flex: 1;
         }
-        
-        .workflow-info p {
-            font-size: 13px;
-            color: #666;
-            margin: 5px 0;
+
+        .file-name {
+            font-weight: 500;
+            color: #1d1d1f;
+            font-size: 0.9rem;
+        }
+
+        .file-size {
+            font-size: 0.8rem;
+            color: #86868b;
+            margin-top: 2px;
+        }
+
+        .remove-file {
+            background: #ff3b30;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .remove-file:hover {
+            background: #d32f2f;
+        }
+
+        .input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d1d6;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 16px;
+            }
+
+            .header {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            .card {
+                padding: 24px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <div class="header-top">
+                <a href="../Main.html" class="back-btn">← Back to Home</a>
+            </div>
             <h1>
-                <span>📊</span>
-                MCAgent
+                <span>⚡</span>
+                FCS Single Processor
             </h1>
-            <p class="subtitle">Automated Bank Statement Processing System</p>
+            <p class="subtitle">Process bank statements one business at a time with real-time feedback</p>
         </div>
-        
-        <div class="main-grid">
-            <!-- Left Panel - Upload and Folders -->
-            <div class="card">
-                <h3 class="card-title">📤 Upload Bank Statements</h3>
-                
-                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
-                    <div class="upload-icon">📁</div>
-                    <div class="upload-text">Click to upload or drag & drop PDF files</div>
-                    <div class="upload-subtext">Bank statement PDFs only • Multiple files supported</div>
-                    <input type="file" id="fileInput" class="file-input" accept=".pdf" multiple onchange="handleFileSelect(event)">
-                </div>
-                
-                <div id="fileList" class="file-list" style="display: none;"></div>
-                
-                <div style="margin-top: 20px; display: none;" id="uploadControls">
-                    <input type="text" id="businessNameInput" class="input" placeholder="Enter business name (e.g., ABC Corporation)" style="margin-bottom: 10px;">
-                    <button class="btn btn-secondary" onclick="uploadFiles()" style="width: 100%;">
-                        ☁️ Upload Files
-                    </button>
-                </div>
-                
-                <div id="uploadStatus" class="status"></div>
-                
-                <!-- Folders Section -->
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #f0f0f0;">
-                    <div class="stats-grid">
-                        <div class="stat-box">
-                            <div class="stat-value" id="folderCount">0</div>
-                            <div class="stat-label">Total Folders</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value" id="lastRefresh">--</div>
-                            <div class="stat-label">Last Refresh</div>
-                        </div>
-                    </div>
-                    
-                    <div class="controls">
-                        <button class="btn btn-secondary" onclick="checkFolders()">
-                            🔄 Refresh Folders
-                        </button>
-                    </div>
-                    
-                    <div id="folderListContainer">
-                        <div class="folder-list" id="folderList">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">📂</div>
-                                <p style="font-size: 12px; margin-top: 10px;">No folders loaded</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="folderStatus" class="status"></div>
+
+        <!-- Upload Section -->
+        <div class="card">
+            <h3 class="card-title">📤 Upload Bank Statements</h3>
+
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">☁️</div>
+                <h4 style="margin-bottom: 8px; color: #1d1d1f;">Drop files here or click to upload</h4>
+                <p style="font-size: 0.9rem; color: #86868b;">Supports PDF files (max 30 pages per file)</p>
+                <input type="file" id="fileInput" accept=".pdf" multiple style="display: none;">
+            </div>
+
+            <div id="fileListContainer" style="display: none;">
+                <h4 style="margin-bottom: 12px; color: #1d1d1f; font-size: 1rem;">Selected Files:</h4>
+                <div class="file-list" id="fileList"></div>
+            </div>
+
+            <input
+                type="text"
+                id="businessName"
+                class="input"
+                placeholder="Enter business name (e.g., 'Acme Corp')"
+                style="display: none;"
+            >
+
+            <button
+                id="uploadBtn"
+                class="btn btn-primary"
+                onclick="uploadFiles()"
+                style="display: none; width: 100%;"
+            >
+                📤 Upload & Create Folder
+            </button>
+
+            <div id="uploadStatus" class="status"></div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">📂 Available Folders</h3>
+
+            <div class="controls">
+                <button class="btn btn-subtle" onclick="loadFolders()">
+                    🔄 Refresh Folders
+                </button>
+            </div>
+
+            <div class="folder-list" id="folderList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📂</div>
+                    <p>Loading folders automatically...</p>
                 </div>
             </div>
-            
-            <!-- Workflow Control Panel -->
-            <div class="card">
-                <h3 class="card-title">📈 File Control Sheet Analysis</h3>
-                
-                <input
-                    type="hidden"
-                    id="webhookUrl"
-                    value="https://dannyatorres.app.n8n.cloud/webhook/mca-processor-single"
-                />
-                
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                    <p style="margin: 0 0 10px 0; color: #333; font-weight: 600;">Report Includes:</p>
-                    <p style="margin: 0; color: #555; font-size: 14px; line-height: 1.6;">
-                        • Monthly deposits & true revenue<br>
-                        • MCA positions & payment amounts<br>
-                        • Negative days & cash flow analysis<br>
-                        • Business profile & underwriting metrics
-                    </p>
-                    <p style="margin: 10px 0 0 0; font-size: 13px; color: #666; font-style: italic;">
-                        📧 Emailed to fcs@jmsglobal.biz
-                    </p>
-                </div>
-                
-                <!-- Batch processing button removed - now using single folder processing -->
-                <!--
-                <div class="checkbox-group">
-                    <input type="checkbox" id="processAll" checked>
-                    <label for="processAll">Process all folders in workflow directory</label>
-                </div>
 
-                <div style="margin-top: 20px;">
-                    <button id="triggerBtn" class="btn btn-primary" onclick="triggerWorkflow()" style="width: 100%;">
-                        📊 Run FCS Reports
-                    </button>
-                </div>
-                -->
-
-                <div id="workflowStatus" class="status"></div>
-                
-                <div class="workflow-info">
-                    <h4>Single Processing Mode:</h4>
-                    <p>✓ Click "Process" next to any folder</p>
-                    <p>✓ Extracts text from bank statements</p>
-                    <p>✓ Analyzes MCA positions & revenue</p>
-                    <p>✓ Emails FCS report to fcs@jmsglobal.biz</p>
-                    <p>✓ Deletes processed folder</p>
-                    <p>✓ Real-time status updates</p>
-                </div>
-            </div>
+            <div id="mainStatus" class="status"></div>
         </div>
     </div>
 
     <script>
-        // Store folder data
         let foldersData = [];
+        let processedFolders = new Set();
         let selectedFiles = [];
-        
+
+        // Auto-load folders on page load
+        window.addEventListener('load', function() {
+            loadFolders();
+        });
+
+        // ===== Upload Functionality =====
+
         // Handle file selection
-        function handleFileSelect(event) {
-            const files = event.target.files;
-            addFiles(files);
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadArea = document.getElementById('uploadArea');
+
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // Drag and drop
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('drag-over');
+            });
+
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('drag-over');
+            });
+
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('drag-over');
+                const files = e.dataTransfer.files;
+                addFiles(files);
+            });
+        });
+
+        function handleFileSelect(e) {
+            addFiles(e.target.files);
         }
-        
-        // Handle drag and drop
-        const uploadArea = document.getElementById('uploadArea');
-        
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-        
-        uploadArea.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-        });
-        
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            addFiles(files);
-        });
-        
-        // Add files to the list
+
         function addFiles(files) {
-            const fileList = document.getElementById('fileList');
-            const uploadControls = document.getElementById('uploadControls');
-            
             for (let file of files) {
                 if (file.type === 'application/pdf') {
                     selectedFiles.push(file);
                 }
             }
-            
             displayFiles();
-            
-            if (selectedFiles.length > 0) {
-                fileList.style.display = 'block';
-                uploadControls.style.display = 'block';
-            }
         }
-        
-        // Display selected files
+
         function displayFiles() {
             const fileList = document.getElementById('fileList');
-            
+            const fileListContainer = document.getElementById('fileListContainer');
+            const businessName = document.getElementById('businessName');
+            const uploadBtn = document.getElementById('uploadBtn');
+
             if (selectedFiles.length === 0) {
-                fileList.style.display = 'none';
-                document.getElementById('uploadControls').style.display = 'none';
+                fileListContainer.style.display = 'none';
+                businessName.style.display = 'none';
+                uploadBtn.style.display = 'none';
                 return;
             }
-            
+
+            fileListContainer.style.display = 'block';
+            businessName.style.display = 'block';
+            uploadBtn.style.display = 'block';
+
             let html = '';
             selectedFiles.forEach((file, index) => {
-                const size = (file.size / 1024 / 1024).toFixed(2);
+                const sizeInMB = (file.size / 1024 / 1024).toFixed(2);
                 html += `
                     <div class="file-item">
-                        <span>📄</span>
-                        <span class="file-item-name">${file.name}</span>
-                        <span class="file-item-size">${size} MB</span>
-                        <span class="remove-file" onclick="removeFile(${index})">✕</span>
+                        <span style="font-size: 24px;">📄</span>
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${sizeInMB} MB</div>
+                        </div>
+                        <button class="remove-file" onclick="removeFile(${index})">✕ Remove</button>
                     </div>
                 `;
             });
-            
+
             fileList.innerHTML = html;
         }
-        
-        // Remove file from list
+
         function removeFile(index) {
             selectedFiles.splice(index, 1);
             displayFiles();
         }
-        
-        // Upload files to storage via n8n
-        async function uploadFiles() {
-            const businessName = document.getElementById('businessNameInput').value;
-            const statusDiv = document.getElementById('uploadStatus');
 
-            if (!businessName) {
-                showStatus(statusDiv, 'Please enter a business name', 'error');
-                return;
-            }
+        async function uploadFiles() {
+            const businessName = document.getElementById('businessName').value.trim();
+            const uploadStatus = document.getElementById('uploadStatus');
+            const uploadBtn = document.getElementById('uploadBtn');
 
             if (selectedFiles.length === 0) {
-                showStatus(statusDiv, 'Please select files to upload', 'error');
+                showStatus(uploadStatus, '⚠️ Please select at least one PDF file', 'error');
                 return;
             }
 
-            showStatus(statusDiv, 'Converting files to base64...', 'info');
-
-            // Convert files to base64
-            const fileData = [];
-            for (let file of selectedFiles) {
-                const base64 = await fileToBase64(file);
-                fileData.push({
-                    name: file.name,
-                    content: base64,
-                    mimeType: 'application/pdf'
-                });
+            if (!businessName) {
+                showStatus(uploadStatus, '⚠️ Please enter a business name', 'error');
+                return;
             }
 
-            showStatus(statusDiv, 'Uploading files...', 'info');
-            
-            // Send to n8n webhook
-            const uploadUrl = 'https://dannyatorres.app.n8n.cloud/webhook/upload-pdfs';
-            
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<span class="loading"></span>Uploading...';
+            showStatus(uploadStatus, '📤 Uploading files to cloud storage...', 'info');
+
             try {
-                const response = await fetch(uploadUrl, {
+                // Convert files to base64
+                const filePromises = selectedFiles.map(file => fileToBase64(file));
+                const filesData = await Promise.all(filePromises);
+
+                const uploadData = {
+                    businessName: businessName,
+                    files: filesData.map((base64, index) => ({
+                        name: selectedFiles[index].name,
+                        content: base64,
+                        mimeType: 'application/pdf'
+                    }))
+                };
+
+                // Send to n8n webhook
+                const response = await fetch('https://dannyatorres.app.n8n.cloud/webhook/upload-pdfs', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        businessName: businessName,
-                        files: fileData
-                    })
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(uploadData)
                 });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    showStatus(statusDiv, `✅ Successfully uploaded ${selectedFiles.length} files!`, 'success');
-                    
-                    // Clear the form
-                    selectedFiles = [];
-                    displayFiles();
-                    document.getElementById('businessNameInput').value = '';
-                    document.getElementById('fileInput').value = '';
-                    
-                    // Refresh folders after upload
-                    setTimeout(() => checkFolders(), 2000);
-                } else {
-                    throw new Error('Upload failed');
-                }
+
+                showStatus(uploadStatus, '✅ Files uploaded successfully! Folder created.', 'success');
+
+                // Clear form
+                selectedFiles = [];
+                document.getElementById('businessName').value = '';
+                document.getElementById('fileInput').value = '';
+                displayFiles();
+
+                // Reload folders after 2 seconds
+                setTimeout(() => {
+                    loadFolders();
+                    uploadBtn.disabled = false;
+                    uploadBtn.innerHTML = '📤 Upload & Create Folder';
+                }, 2000);
+
             } catch (error) {
-                // Try no-cors mode
-                try {
-                    await fetch(uploadUrl, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            businessName: businessName,
-                            files: fileData
-                        })
-                    });
-                    
-                    showStatus(statusDiv, '✅ Files uploaded successfully. Refreshing folders...', 'success');
-                    
-                    // Clear and refresh
-                    selectedFiles = [];
-                    displayFiles();
-                    document.getElementById('businessNameInput').value = '';
-                    document.getElementById('fileInput').value = '';
-                    
-                    setTimeout(() => checkFolders(), 3000);
-                } catch (noCorsError) {
-                    showStatus(statusDiv, 'Upload error. Make sure the upload webhook is active in n8n.', 'error');
-                }
+                console.error('Upload error:', error);
+                showStatus(uploadStatus, '❌ Upload failed. Please try again.', 'error');
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '📤 Upload & Create Folder';
             }
         }
-        
-        // Convert file to base64
+
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
                 reader.readAsDataURL(file);
-                reader.onload = () => {
-                    // Remove the data:application/pdf;base64, prefix
-                    const base64 = reader.result.split(',')[1];
-                    resolve(base64);
-                };
-                reader.onerror = error => reject(error);
             });
         }
-        
-        // Check folders from Google Drive
-        async function checkFolders() {
-            const statusDiv = document.getElementById('folderStatus');
+
+        // ===== Folder Processing Functions =====
+
+        // Load folders from storage
+        async function loadFolders() {
+            const statusDiv = document.getElementById('mainStatus');
+            const folderList = document.getElementById('folderList');
+
             showStatus(statusDiv, 'Loading available folders...', 'info');
-            
-            // Use the list-folders endpoint
-            const baseUrl = document.getElementById('webhookUrl').value;
-            const checkUrl = baseUrl.replace('/mca-processor-single', '/list-folders');
-            
-            console.log('Fetching folders from:', checkUrl);
-            
+
+            const listUrl = 'https://dannyatorres.app.n8n.cloud/webhook/list-folders';
+
             try {
-                const response = await fetch(checkUrl, {
+                const response = await fetch(listUrl, {
                     method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
+                    headers: { 'Accept': 'application/json' }
                 });
-                
+
                 if (response.ok) {
-                    try {
-                        const text = await response.text();
-                        
-                        // Check if response is empty or just whitespace
-                        if (!text || text.trim().length === 0) {
-                            displayFolders([]);
-                            showStatus(statusDiv, 'No folders in workflow directory', 'info');
-                            return;
-                        }
-                        
-                        // Try to parse JSON
-                        const data = JSON.parse(text);
-                        console.log('Received folder data:', data);
-                        
-                        if (data.folders && Array.isArray(data.folders)) {
-                            if (data.folders.length === 0) {
-                                displayFolders([]);
-                            } else {
-                                displayFolders(data.folders);
-                                showStatus(statusDiv, `✅ Loaded ${data.folders.length} folders`, 'success');
-                            }
-                        } else {
-                            displayFolders([]);
-                        }
-                    } catch (parseError) {
-                        console.error('Error parsing response:', parseError);
+                    const text = await response.text();
+
+                    if (!text || text.trim().length === 0) {
                         displayFolders([]);
-                        showStatus(statusDiv, 'No folders found', 'info');
+                        showStatus(statusDiv, 'No folders in workflow directory', 'info');
+                        return;
+                    }
+
+                    const data = JSON.parse(text);
+
+                    if (data.folders && Array.isArray(data.folders)) {
+                        if (data.folders.length === 0) {
+                            displayFolders([]);
+                        } else {
+                            foldersData = data.folders;
+                            displayFolders(data.folders);
+                            showStatus(statusDiv, `✅ Loaded ${data.folders.length} folders`, 'success');
+                        }
+                    } else {
+                        displayFolders([]);
                     }
                 } else {
                     throw new Error(`HTTP ${response.status}`);
                 }
-                
-            } catch (error) {
-                console.error('Error fetching folders:', error);
-                
-                // If CORS error or fetch fails, try a different approach
-                if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-                    showStatus(statusDiv, 'Connection error - trying alternative method...', 'info');
 
-                    // Try with no-cors mode (won't be able to read response)
-                    fetch(checkUrl, { method: 'GET', mode: 'no-cors' })
-                        .then(() => {
-                            showStatus(statusDiv, 'Request sent. Loading sample data for now.', 'info');
-                            setTimeout(() => simulateFolders(), 1000);
-                        })
-                        .catch(() => {
-                            showStatus(statusDiv, 'Could not connect. Ensure the list-folders webhook is set up.', 'error');
-                        });
-                } else {
-                    showStatus(statusDiv, `Error: ${error.message}. Make sure the list-folders webhook is active.`, 'error');
-                }
+            } catch (error) {
+                console.error('Error loading folders:', error);
+                showStatus(statusDiv, 'Error loading folders. Make sure the list-folders webhook is active.', 'error');
             }
         }
-        
-        // Simulate folder data for demonstration
-        function simulateFolders() {
-            const sampleFolders = [
-                { name: 'ABC Corporation', files: 3 },
-                { name: 'XYZ Enterprises', files: 5 },
-                { name: 'Smith Holdings LLC', files: 4 },
-                { name: 'Johnson & Associates', files: 6 },
-                { name: 'Global Tech Solutions', files: 3 },
-                { name: 'Prime Retail Group', files: 4 }
-            ];
-            
-            displayFolders(sampleFolders);
-            showStatus(document.getElementById('folderStatus'), 'Sample data loaded (demonstration)', 'success');
-        }
-        
-        // Display folders in the list
+
+        // Display folders
         function displayFolders(folders) {
-            foldersData = folders;
             const listContainer = document.getElementById('folderList');
-            const folderCount = document.getElementById('folderCount');
-            const lastRefresh = document.getElementById('lastRefresh');
 
             if (folders.length === 0) {
                 listContainer.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">📂</div>
-                        <p>No folders found</p>
+                        <p>No folders found in workflow directory</p>
                     </div>
                 `;
-                folderCount.textContent = '0';
-                showStatus(document.getElementById('folderStatus'), 'No folders found in workflow directory', 'info');
                 return;
             }
 
-            // Update stats
-            folderCount.textContent = folders.length;
-            lastRefresh.textContent = new Date().toLocaleTimeString();
-
-            // Build folder list HTML with Process button only
+            // Build folder list
             let html = '';
-            folders.forEach(folder => {
+            folders.forEach((folder, index) => {
+                const isProcessed = processedFolders.has(folder.id);
+                const statusClass = isProcessed ? 'completed' : '';
+                const statusBadge = isProcessed ? '<span class="badge badge-success">✓ Processed</span>' : '<span class="badge badge-processing">⏳ Pending</span>';
+
                 html += `
-                    <div class="folder-item" id="folder-${folder.id}">
+                    <div class="folder-item ${statusClass}" id="folder-${folder.id}">
                         <span class="folder-icon">📁</span>
-                        <span class="folder-name">${folder.name}</span>
+                        <div class="folder-info">
+                            <div class="folder-name">${folder.name}</div>
+                            <div class="folder-status" id="status-${folder.id}">
+                                ${statusBadge}
+                            </div>
+                        </div>
                         <button
-                            class="btn btn-primary"
-                            style="padding: 8px 16px; font-size: 13px;"
+                            class="btn btn-primary btn-small"
                             id="btn-${folder.id}"
-                            onclick="processSingleFolder('${folder.id}', '${folder.name.replace(/'/g, "\\'")}')"
+                            onclick="processFolder('${folder.id}', '${folder.name.replace(/'/g, "\\'")}')"
+                            ${isProcessed ? 'disabled' : ''}
                         >
-                            ▶️ Process
+                            ${isProcessed ? '✓ Done' : '▶️ Process'}
                         </button>
                     </div>
                 `;
@@ -801,19 +755,20 @@
 
             listContainer.innerHTML = html;
         }
-        
+
         // Process single folder with smart error detection
-        async function processSingleFolder(folderId, folderName) {
+        async function processFolder(folderId, folderName) {
             const folderItem = document.getElementById(`folder-${folderId}`);
+            const statusDiv = document.getElementById(`status-${folderId}`);
             const btn = document.getElementById(`btn-${folderId}`);
-            const statusDiv = document.getElementById('folderStatus');
 
             // Update UI to processing state
+            folderItem.classList.add('processing');
             btn.disabled = true;
             btn.innerHTML = '<span class="loading"></span>OCR Processing...';
-            showStatus(statusDiv, `${folderName}: Running OCR on bank statements...`, 'info');
+            statusDiv.innerHTML = '<span class="badge badge-processing">⏳ Processing OCR...</span>';
 
-            const webhookUrl = document.getElementById('webhookUrl').value;
+            const webhookUrl = 'https://dannyatorres.app.n8n.cloud/webhook/mca-processor-single';
 
             try {
                 const response = await fetch(webhookUrl, {
@@ -838,7 +793,6 @@
 
                     // Check if response indicates an error
                     if (result.status === 'error' || result.error) {
-                        // Server returned an error
                         if (result.message && result.message.includes('401')) {
                             throw new Error('AUTH_REQUIRED');
                         } else if (result.message && result.message.includes('page')) {
@@ -852,7 +806,7 @@
                     btn.innerHTML = '📧 Sending Email...';
                     btn.style.background = '#ffc107';
 
-                    showStatus(statusDiv,
+                    showStatus(document.getElementById('mainStatus'),
                         `✅ ${folderName}: ${result.message || 'OCR complete - email sending...'}`,
                         'success'
                     );
@@ -860,17 +814,24 @@
                     // Wait for email to be sent
                     setTimeout(() => {
                         btn.innerHTML = '✅ Complete';
-                        btn.style.background = '#28a745';
-                        showStatus(statusDiv, `✅ ${folderName}: FCS report sent! Check your email.`, 'success');
+                        btn.style.background = '#34c759';
+                        folderItem.classList.remove('processing');
+                        folderItem.classList.add('completed');
+                        statusDiv.innerHTML = '<span class="badge badge-success">✓ Email Sent!</span>';
 
-                        setTimeout(() => checkFolders(), 2000);
+                        processedFolders.add(folderId);
+
+                        showStatus(document.getElementById('mainStatus'),
+                            `✅ ${folderName}: FCS report sent! Check your email.`,
+                            'success'
+                        );
+
+                        setTimeout(() => loadFolders(), 2000);
                     }, 30000);
 
                 } else if (response.status === 401 || response.status === 403) {
-                    // Authentication error
                     throw new Error('AUTH_REQUIRED');
                 } else if (response.status === 413) {
-                    // Payload too large (too many pages)
                     throw new Error('PAGE_LIMIT');
                 } else {
                     throw new Error(`HTTP_${response.status}`);
@@ -882,19 +843,15 @@
                 // Determine error type and show appropriate message
                 let errorMessage = '';
                 let errorIcon = '❌';
-                let canRetry = true;
 
                 if (error.message === 'AUTH_REQUIRED' || error.message.includes('Unexpected end of JSON')) {
-                    // Authentication issue
                     errorIcon = '🔐';
-                    errorMessage = `${folderName}: Authentication required. Please reconnect your account in n8n, then click "Retry".`;
+                    errorMessage = `${folderName}: Authentication required. Reconnect your account in n8n, then click "Retry".`;
                 } else if (error.message === 'PAGE_LIMIT' || error.message.includes('413')) {
-                    // Too many pages
                     errorIcon = '📄';
-                    errorMessage = `${folderName}: File exceeds 30-page limit. Please reduce the number of pages and click "Retry".`;
-                    canRetry = true;
+                    errorMessage = `${folderName}: File exceeds 30-page limit. Please reduce pages and click "Retry".`;
                 } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                    // Network/CORS issue - try no-cors fallback
+                    // Try no-cors fallback
                     try {
                         await fetch(webhookUrl, {
                             method: 'POST',
@@ -906,64 +863,49 @@
                             })
                         });
 
-                        // No-cors successful (can't read response)
                         btn.innerHTML = '⏳ Processing...';
                         btn.disabled = false;
                         btn.style.background = '#ffc107';
 
-                        showStatus(statusDiv,
-                            `⏳ ${folderName}: Processing started (CORS mode). Check email in 2-3 minutes or click to refresh status.`,
+                        showStatus(document.getElementById('mainStatus'),
+                            `⏳ ${folderName}: Processing started (CORS mode). Check email in 2-3 minutes.`,
                             'info'
                         );
 
-                        setTimeout(() => checkFolders(), 120000);
-                        return; // Exit early
+                        setTimeout(() => loadFolders(), 120000);
+                        return;
 
                     } catch (noCorsError) {
                         errorIcon = '🔌';
                         errorMessage = `${folderName}: Connection error. Check if n8n workflow is active, then click "Retry".`;
                     }
                 } else {
-                    // Generic error
                     errorMessage = `${folderName}: ${error.message}. Click "Retry" to try again.`;
                 }
 
                 // Update UI for error state
-                btn.innerHTML = canRetry ? '🔄 Retry' : '❌ Error';
-                btn.disabled = !canRetry;
-                btn.style.background = '#dc3545';
-                folderItem.style.borderColor = '#dc3545';
+                folderItem.classList.remove('processing');
+                folderItem.classList.add('error');
+                btn.innerHTML = '🔄 Retry';
+                btn.disabled = false;
+                btn.style.background = '#ff3b30';
+                statusDiv.innerHTML = '<span class="badge badge-error">✗ Failed</span>';
 
-                showStatus(statusDiv, `${errorIcon} ${errorMessage}`, 'error');
+                showStatus(document.getElementById('mainStatus'), `${errorIcon} ${errorMessage}`, 'error');
             }
         }
-        
+
         // Show status message
         function showStatus(element, message, type) {
             element.textContent = message;
             element.className = `status show ${type}`;
-            
+
             if (type === 'success') {
                 setTimeout(() => {
                     element.className = 'status';
                 }, 5000);
             }
         }
-        
-        // Save/load settings and auto-load folders
-        window.addEventListener('load', function() {
-            const saved = localStorage.getItem('mca_webhook_url');
-            if (saved) {
-                document.getElementById('webhookUrl').value = saved;
-            }
-
-            // Auto-load folders on page load
-            checkFolders();
-        });
-        
-        document.getElementById('webhookUrl').addEventListener('change', function() {
-            localStorage.setItem('mca_webhook_url', this.value);
-        });
     </script>
 </body>
 </html>
