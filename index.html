@@ -75,7 +75,7 @@
         
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 20px;
         }
         
@@ -198,20 +198,34 @@
         </div>
         
         <div class="cards-grid">
-            <a href="./FCS/index.html" class="card">
+            <a href="./FCS-BATCH/index.html" class="card">
                 <div class="card-icon">📈</div>
-                <h2>FCS Processor</h2>
-                <p>Generate comprehensive File Control Sheets with automated bank statement analysis.</p>
+                <h2>FCS Batch Processor</h2>
+                <p>Process multiple businesses at once with automated bank statement analysis.</p>
                 <ul class="card-features">
-                    <li>Upload PDFs to Google Drive</li>
-                    <li>Process bank statements</li>
+                    <li>Upload PDFs to storage</li>
+                    <li>Batch process all folders</li>
                     <li>Analyze MCA positions</li>
                     <li>Generate FCS reports</li>
-                    <li>Email results</li>
+                    <li>Auto-email all results</li>
                 </ul>
-                <span class="btn">Open FCS Tool →</span>
+                <span class="btn">Open Batch Tool →</span>
             </a>
-            
+
+            <a href="./FCS-One/mca-single.html" class="card">
+                <div class="card-icon">⚡</div>
+                <h2>FCS Single Processor</h2>
+                <p>Process one business at a time with real-time feedback and status updates.</p>
+                <ul class="card-features">
+                    <li>Upload bank statements</li>
+                    <li>Process on-demand</li>
+                    <li>Real-time OCR feedback</li>
+                    <li>Instant error detection</li>
+                    <li>Email individual reports</li>
+                </ul>
+                <span class="btn">Open Single Tool →</span>
+            </a>
+
             <a href="./LenderBook/index.html" class="card">
                 <div class="card-icon">🏦</div>
                 <h2>LenderBook</h2>
@@ -225,7 +239,7 @@
                 </ul>
                 <span class="btn">Open Lender Book →</span>
             </a>
-            
+
             <a href="./CRM/index.html" class="card">
                 <div class="card-icon">🚀</div>
                 <h2>CRM Lead Formatter</h2>
