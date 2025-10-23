@@ -180,6 +180,13 @@
             background-clip: text;
         }
 
+        .card:nth-child(5) .card-icon {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 30px 16px;
@@ -228,6 +235,7 @@
         .card:nth-child(2) { animation-delay: 0.2s; }
         .card:nth-child(3) { animation-delay: 0.3s; }
         .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
     </style>
 </head>
 <body>
@@ -295,6 +303,18 @@
                     <li>PhoneBurner ready</li>
                 </ul>
                 <span class="btn">Open CRM Tool →</span>
+            </a>
+
+            <a href="./pdf_splitter.html" class="card">
+                <div class="card-icon">✂️</div>
+                <h2>PDF Splitter</h2>
+                <p>Split large PDFs into 30-page chunks for OCR processing. Our OCR system fails on documents over 30 pages.</p>
+                <ul class="card-features">
+                    <li>Auto-splits into 30-page chunks</li>
+                    <li>Download all parts separately</li>
+                    <li>Perfect for bank statements</li>
+                </ul>
+                <span class="btn">Open PDF Splitter →</span>
             </a>
         </div>
     </div>
