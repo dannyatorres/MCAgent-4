@@ -281,7 +281,7 @@
             <h1>📊 CRM Lead Formatter</h1>
             <p class="subtitle">Convert your leads into CRM-ready formats</p>
             <p class="subtitle">Transform your lead spreadsheet into formatted files for CRM import, iPhone mass texting campaigns, and Vonage Business Communications.</p>
-            <p class="subtitle" style="margin-top: 12px; color: #34c759; font-weight: 500;">✓ Supports multiple CSV formats with auto-detection</p>
+            <p class="subtitle" style="margin-top: 12px; color: #34c759; font-weight: 500;">✓ Supports 3 CSV formats with auto-detection (Standard, Braintrust, Braintrust TLO)</p>
         </div>
 
         <div class="card">
@@ -454,9 +454,21 @@
         }
 
         function detectFormat(headers) {
+            const normalizedHeaders = headers.map(h => h.toLowerCase().trim());
+            
+            // Check for Braintrust2 format (TLO format)
+            const braintrust2Columns = ['tlo phone 1', 'tlo email 1', 'business name', 'turnover'];
+            const braintrust2Matches = braintrust2Columns.filter(col => 
+                normalizedHeaders.includes(col)
+            ).length;
+            
+            if (braintrust2Matches >= 2) {
+                console.log('Detected Braintrust2 (TLO) format');
+                return 'braintrust2';
+            }
+            
             // Check for Braintrust format indicators
             const braintrustColumns = ['firstname', 'lastname', 'phone1', 'company'];
-            const normalizedHeaders = headers.map(h => h.toLowerCase().trim());
             
             // Count how many Braintrust-specific columns are present
             const braintrustMatches = braintrustColumns.filter(col => 
@@ -617,6 +629,61 @@
                     'SSN': row['ssn'] || '',
                     'Business Start Date': row['yearsinbusiness'] || '',
                     'Notes': row['notes'] || ''
+                };
+            });
+        }
+
+        function normalizeDataFromBraintrust2(data) {
+            // Convert Braintrust2 (TLO) format to standard format
+            return data.filter(row => {
+                // Filter out rows where Business Name is a date (like "November 4, 2025")
+                const businessName = row['Business Name'] || '';
+                if (!businessName || businessName.match(/^\w+\s+\d+,\s+\d{4}$/)) {
+                    return false;
+                }
+                return true;
+            }).map(row => {
+                // Get first available phone number and format it
+                const rawPhone1 = row['TLO Phone 1'] || '';
+                const rawPhone2 = row['TLO Phone 2'] || '';
+                const phone = formatPhoneNumber(rawPhone1) || formatPhoneNumber(rawPhone2);
+                
+                // Get first available email
+                const email = row['TLO Email 1'] || row['TLO Email 2'] || '';
+                
+                // Names are already separated
+                const firstName = row['First Name'] || '';
+                const lastName = row['Last Name'] || '';
+                
+                // Parse the combined address field
+                const businessAddress = row['Business Address Street,City,State,Zip'] || '';
+                let address = '', city = '', state = '', zip = '';
+                if (businessAddress) {
+                    const addressParts = businessAddress.split(',');
+                    address = addressParts[0] || '';
+                    city = addressParts[1] || '';
+                    state = addressParts[2] || '';
+                    zip = addressParts[3] || '';
+                }
+                
+                return {
+                    'Owner Name': `${firstName} ${lastName}`.trim(),
+                    'First Name': firstName,
+                    'Last Name': lastName,
+                    'Phone Number': phone,
+                    'Mobile': phone,
+                    'Company Name': row['Business Name'] || '',
+                    'Email': email,
+                    'Address': address.trim(),
+                    'City': city.trim(),
+                    'State': state.trim(),
+                    'Zip': zip.trim(),
+                    'Monthly Revenue': row['Turnover'] || '',
+                    'DOB': row['DOB'] || '',
+                    'TaxID': row['EIN'] || '',
+                    'SSN': row['SSN'] || '',
+                    'Business Start Date': row['Business Start Date'] || '',
+                    'Notes': row['Notes'] || ''
                 };
             });
         }
@@ -813,7 +880,10 @@
 
                 // Normalize data based on format
                 let normalizedData;
-                if (format === 'braintrust') {
+                if (format === 'braintrust2') {
+                    normalizedData = normalizeDataFromBraintrust2(data);
+                    showStatus('Processing file... 🔄 <span class="format-badge">Braintrust2 (TLO) Format Detected</span>', 'processing');
+                } else if (format === 'braintrust') {
                     normalizedData = normalizeDataFromBraintrust(data);
                     showStatus('Processing file... 🔄 <span class="format-badge">Braintrust Format Detected</span>', 'processing');
                 } else {
@@ -834,9 +904,12 @@
 
             setupDownloads(crmFile, nameOnlyFile, vonageFile);
             
-            const formatBadge = format === 'braintrust' ? 
-                '<span class="format-badge">Braintrust Format</span>' : 
-                '<span class="format-badge">Standard Format</span>';
+            let formatBadge = '<span class="format-badge">Standard Format</span>';
+            if (format === 'braintrust2') {
+                formatBadge = '<span class="format-badge">Braintrust2 (TLO) Format</span>';
+            } else if (format === 'braintrust') {
+                formatBadge = '<span class="format-badge">Braintrust Format</span>';
+            }
             
             showStatus(`Files processed successfully! ✅ ${formatBadge}`, 'success');
         }
