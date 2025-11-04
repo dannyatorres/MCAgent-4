@@ -447,6 +447,9 @@
 
         function formatNameToProperCase(name) {
             if (!name) return '';
+            name = name.trim();
+            if (!name) return '';
+            // Handle names that are all caps or all lowercase
             return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
         }
 
@@ -575,8 +578,9 @@
                 }
                 return true;
             }).map(row => {
-                // Get first available phone number
-                const phone = row['phone1'] || row['phone2'] || row['phone3'] || row['phone4'] || row['phone5'] || '';
+                // Get first available phone number and format it
+                const rawPhone = row['phone1'] || row['phone2'] || row['phone3'] || row['phone4'] || row['phone5'] || '';
+                const phone = formatPhoneNumber(rawPhone);
                 
                 // Get first available email
                 const email = row['email'] || row['email2'] || row['email3'] || row['email4'] || '';
@@ -586,10 +590,13 @@
                 let lastName = row['lastname'] || '';
                 
                 // If firstname contains a full name (has a space), split it
-                if (firstName.includes(' ') && !lastName) {
+                if (firstName.includes(' ')) {
                     const nameParts = firstName.trim().split(/\s+/);
                     firstName = nameParts[0] || '';
-                    lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+                    // Only set lastName from firstname if lastname is empty
+                    if (!lastName) {
+                        lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+                    }
                 }
                 
                 return {
@@ -736,10 +743,12 @@
                 const phone = row['Phone Number'] || '';
 
                 if (formattedFirstName && phone && !/^\d+$/.test(formattedFirstName)) {
+                    // No quotes, just comma-separated
                     rows.push(`${formattedFirstName},${phone}`);
                 }
             });
 
+            // No header row for iPhone format
             return rows.join('\n');
         }
 
