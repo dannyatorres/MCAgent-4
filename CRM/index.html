@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Lead Formatter - MCAgent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f7;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: #007aff;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .back-btn:hover {
+            opacity: 0.7;
+        }
+
+        h1 {
+            color: #1d1d1f;
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .subtitle {
+            color: #86868b;
+            font-size: 1rem;
+            font-weight: 400;
+            margin-top: 8px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .upload-area {
+            border: 2px dashed #007aff;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 24px;
+        }
+
+        .upload-area:hover {
+            border-color: #0051d5;
+            background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+            transform: scale(1.01);
+        }
+
+        .upload-area.dragging {
+            border-color: #34c759;
+            background: linear-gradient(135deg, #d1f4e0 0%, #c1f0d5 100%);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .upload-text {
+            color: #1d1d1f;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .upload-subtext {
+            color: #86868b;
+            font-size: 0.9rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .status {
+            padding: 14px 18px;
+            border-radius: 10px;
+            display: none;
+            font-size: 0.9rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status.processing {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+        }
+
+        .status.success {
+            background: #d1f4e0;
+            color: #1d7a3a;
+            border: 1px solid #34c759;
+        }
+
+        .status.error {
+            background: #ffe5e5;
+            color: #d32f2f;
+            border: 1px solid #ff3b30;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .format-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #007aff;
+            color: white;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .download-section {
+            display: none;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 20px;
+            letter-spacing: -0.3px;
+        }
+
+        .download-buttons {
+            display: grid;
+            gap: 12px;
+        }
+
+        .download-btn {
+            padding: 16px 20px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .download-btn:hover {
+            background: #0051d5;
+            transform: translateY(-2px);
+        }
+
+        .download-btn span {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            font-weight: normal;
+        }
+
+        .instructions {
+            background: #f5f5f7;
+            padding: 24px;
+            border-radius: 12px;
+            display: none;
+            margin-top: 24px;
+        }
+
+        .instructions h3 {
+            color: #1d1d1f;
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #1d1d1f;
+        }
+
+        .instructions li {
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: #86868b;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: #007aff;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <a href="https://www.mcagent.ai" class="back-btn">← Back to MCAgent</a>
+            </div>
+            <h1>📊 CRM Lead Formatter</h1>
+            <p class="subtitle">Convert your leads into CRM-ready formats</p>
+            <p class="subtitle">Transform your lead spreadsheet into formatted files for CRM import, iPhone mass texting campaigns, and Vonage Business Communications.</p>
+            <p class="subtitle" style="margin-top: 12px; color: #34c759; font-weight: 500;">✓ Supports 3 CSV formats with auto-detection (Standard, Braintrust, Braintrust TLO)</p>
+        </div>
+
+        <div class="card">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Drop your CSV file here</div>
+                <div class="upload-subtext">or click to browse</div>
+            </div>
+
+            <input type="file" id="fileInput" accept=".csv">
+
+            <div class="status" id="status"></div>
+        </div>
+
+        <div class="card download-section" id="downloadSection">
+            <h2 class="section-title">📥 Download Your Files</h2>
+            <div class="download-buttons">
+                <a href="#" class="download-btn" id="crmDownload">
+                    <span>📋 CRM Import File</span>
+                    <span>Full lead data for your CRM</span>
+                </a>
+                <a href="#" class="download-btn" id="nameOnlyDownload">
+                    <span>📱 iPhone Mass Texting Format</span>
+                    <span>Simplified contact list for SMS campaigns</span>
+                </a>
+                <a href="#" class="download-btn" id="vonageDownload">
+                    <span>☎️ Vonage Format</span>
+                    <span>Ready for Vonage import</span>
+                </a>
+            </div>
+
+            <div class="instructions" id="instructions">
+                <h3>📋 Next Steps:</h3>
+                <ol>
+                    <li><strong>CRM Import File:</strong> Use this for your main CRM system. Contains all lead information including contact details, business info, and financial data.</li>
+                    <li><strong>iPhone Mass Texting Format:</strong> Perfect for quick dialing lists or SMS campaigns. Contains just first names and phone numbers.</li>
+                    <li><strong>Vonage Format:</strong> Formatted specifically for Vonage Business Communications import.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Made with ❤️ by <a href="https://www.mcagent.ai" target="_blank">MCAgent</a></p>
+        <p>Need help? Contact us at support@mcagent.ai</p>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const status = document.getElementById('status');
+        const downloadSection = document.getElementById('downloadSection');
+        const instructions = document.getElementById('instructions');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragging');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragging');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragging');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function showStatus(message, type) {
+            status.innerHTML = message;
+            status.className = 'status show ' + type;
+        }
+
+        function formatPhoneNumber(phone) {
+            if (!phone) return '';
+            const cleaned = phone.replace(/\D/g, '');
+            
+            if (cleaned.length === 11 && cleaned.startsWith('1')) {
+                return cleaned.substring(1);
+            }
+            
+            if (cleaned.length === 10) {
+                return cleaned;
+            }
+            
+            return cleaned;
+        }
+
+        function formatSSN(ssn) {
+            if (!ssn) return '';
+            const cleaned = ssn.replace(/\D/g, '');
+            
+            if (cleaned.length === 9) {
+                return cleaned.substring(0, 3) + '-' + 
+                       cleaned.substring(3, 5) + '-' + 
+                       cleaned.substring(5);
+            }
+            
+            return ssn;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr || dateStr.trim() === '') return '';
+            
+            // Check if it's in DD-MM-YYYY or DD/MM/YYYY format (day first)
+            const ddmmyyyyPattern = /^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/;
+            const match = dateStr.match(ddmmyyyyPattern);
+            
+            if (match) {
+                const day = match[1];
+                const month = match[2];
+                const year = match[3];
+                
+                // Check if this looks like DD/MM/YYYY (day > 12 or month <= 12)
+                // If day > 12, it's definitely DD/MM/YYYY
+                // If day <= 12 and month <= 12, we need to guess based on context
+                const dayNum = parseInt(day);
+                const monthNum = parseInt(month);
+                
+                if (dayNum > 12) {
+                    // Definitely DD/MM/YYYY format
+                    return `${month.padStart(2, '0')}/${day.padStart(2, '0')}/${year}`;
+                } else if (monthNum > 12) {
+                    // Definitely MM/DD/YYYY format (already correct)
+                    return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+                } else {
+                    // Ambiguous case - assume DD/MM/YYYY if separated by dash, MM/DD/YYYY if separated by slash
+                    if (dateStr.includes('-')) {
+                        // DD-MM-YYYY format, convert to MM/DD/YYYY
+                        return `${month.padStart(2, '0')}/${day.padStart(2, '0')}/${year}`;
+                    } else {
+                        // Could be either, but check if it makes sense as a date
+                        // For now, assume it's DD/MM/YYYY based on the data pattern
+                        return `${month.padStart(2, '0')}/${day.padStart(2, '0')}/${year}`;
+                    }
+                }
+            }
+            
+            // Try parsing as a date
+            const date = new Date(dateStr);
+            
+            if (isNaN(date.getTime())) return dateStr;
+            
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const year = date.getFullYear();
+            
+            return `${month}/${day}/${year}`;
+        }
+
+        function formatNameToProperCase(name) {
+            if (!name) return '';
+            name = name.trim();
+            if (!name) return '';
+            // Handle names that are all caps or all lowercase
+            return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+        }
+
+        function detectFormat(headers) {
+            const normalizedHeaders = headers.map(h => h.toLowerCase().trim());
+            
+            // Check for Braintrust2 format (TLO format)
+            const braintrust2Columns = ['tlo phone 1', 'tlo email 1', 'business name', 'turnover'];
+            const braintrust2Matches = braintrust2Columns.filter(col => 
+                normalizedHeaders.includes(col)
+            ).length;
+            
+            if (braintrust2Matches >= 2) {
+                console.log('Detected Braintrust2 (TLO) format');
+                return 'braintrust2';
+            }
+            
+            // Check for Braintrust format indicators
+            const braintrustColumns = ['firstname', 'lastname', 'phone1', 'company'];
+            
+            // Count how many Braintrust-specific columns are present
+            const braintrustMatches = braintrustColumns.filter(col => 
+                normalizedHeaders.includes(col)
+            ).length;
+            
+            // Need at least 2 Braintrust columns to be considered Braintrust format
+            if (braintrustMatches >= 2) {
+                console.log('Detected Braintrust format');
+                return 'braintrust';
+            }
+            
+            // Check for original format indicators
+            const originalColumns = ['owner name'];
+            const hasOriginalColumns = originalColumns.some(col => 
+                normalizedHeaders.includes(col)
+            );
+            
+            if (hasOriginalColumns) {
+                console.log('Detected Original format');
+                return 'original';
+            }
+            
+            // Default to original if can't determine
+            console.log('Defaulting to Original format');
+            return 'original';
+        }
+
+        async function processCSV(csvText) {
+            return new Promise((resolve) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js';
+                
+                script.onload = () => {
+                    console.log('Papa Parse loaded successfully');
+                    
+                    const result = Papa.parse(csvText, {
+                        header: true,
+                        skipEmptyLines: true,
+                        transformHeader: (header) => header.trim()
+                    });
+
+                    console.log('Parsed headers:', result.meta.fields);
+                    console.log('Sample parsed row:', result.data[0]);
+
+                    if (result.errors.length > 0) {
+                        console.warn('CSV parsing warnings:', result.errors);
+                    }
+
+                    resolve({
+                        headers: result.meta.fields,
+                        data: result.data
+                    });
+                };
+
+                script.onerror = () => {
+                    console.log('Papa Parse failed to load, using fallback parser');
+                    resolve(manualCSVParse(csvText));
+                };
+
+                document.head.appendChild(script);
+            });
+        }
+
+        function manualCSVParse(csvText) {
+            const lines = csvText.split(/\r?\n/);
+            const headers = [];
+            const data = [];
+
+            if (lines.length > 0) {
+                headers.push(...lines[0].split(',').map(h => h.trim()));
+            }
+
+            const expectedColumns = headers.length;
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+
+                for (let j = 0; j < lines[i].length; j++) {
+                    const char = lines[i][j];
+
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current.trim());
+
+                if (values.length !== expectedColumns) {
+                    console.error(`Row ${i + 1} has ${values.length} columns, expected ${expectedColumns}.`);
+                }
+
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+
+                data.push(row);
+            }
+
+            return { headers, data };
+        }
+
+        function normalizeDataFromBraintrust(data) {
+            // Convert Braintrust format to standard format
+            return data.filter(row => {
+                // Filter out rows where company is a date (like "November 4, 2025")
+                const company = row['company'] || '';
+                if (!company || company.match(/^\w+\s+\d+,\s+\d{4}$/)) {
+                    return false;
+                }
+                return true;
+            }).map(row => {
+                // Get first available phone number and format it
+                const rawPhone = row['phone1'] || row['phone2'] || row['phone3'] || row['phone4'] || row['phone5'] || '';
+                const phone = formatPhoneNumber(rawPhone);
+                
+                // Get first available email
+                const email = row['email'] || row['email2'] || row['email3'] || row['email4'] || '';
+                
+                // Handle firstname field which may contain full name
+                let firstName = row['firstname'] || '';
+                let lastName = row['lastname'] || '';
+                
+                // If firstname contains a full name (has a space), split it
+                if (firstName.includes(' ')) {
+                    const nameParts = firstName.trim().split(/\s+/);
+                    firstName = nameParts[0] || '';
+                    // Only set lastName from firstname if lastname is empty
+                    if (!lastName) {
+                        lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+                    }
+                }
+                
+                return {
+                    'Owner Name': `${firstName} ${lastName}`.trim(),
+                    'First Name': firstName,
+                    'Last Name': lastName,
+                    'Phone Number': phone,
+                    'Mobile': phone,
+                    'Company Name': row['company'] || '',
+                    'Email': email,
+                    'Address': row['address1'] || '',
+                    'City': row['city'] || '',
+                    'State': row['state'] || '',
+                    'Zip': row['zip'] || '',
+                    'Monthly Revenue': row['revenue'] || '',
+                    'DOB': row['dob'] || '',
+                    'TaxID': row['ein'] || '',
+                    'SSN': row['ssn'] || '',
+                    'Business Start Date': row['yearsinbusiness'] || '',
+                    'Notes': row['notes'] || ''
+                };
+            });
+        }
+
+        function normalizeDataFromBraintrust2(data) {
+            // Convert Braintrust2 (TLO) format to standard format
+            return data.filter(row => {
+                // Filter out rows where Business Name is a date (like "November 4, 2025")
+                const businessName = row['Business Name'] || '';
+                if (!businessName || businessName.match(/^\w+\s+\d+,\s+\d{4}$/)) {
+                    return false;
+                }
+                return true;
+            }).map(row => {
+                // Get first available phone number and format it
+                const rawPhone1 = row['TLO Phone 1'] || '';
+                const rawPhone2 = row['TLO Phone 2'] || '';
+                const phone = formatPhoneNumber(rawPhone1) || formatPhoneNumber(rawPhone2);
+                
+                // Get first available email
+                const email = row['TLO Email 1'] || row['TLO Email 2'] || '';
+                
+                // Names are already separated
+                const firstName = row['First Name'] || '';
+                const lastName = row['Last Name'] || '';
+                
+                // Parse the combined address field
+                const businessAddress = row['Business Address Street,City,State,Zip'] || '';
+                let address = '', city = '', state = '', zip = '';
+                if (businessAddress) {
+                    const addressParts = businessAddress.split(',');
+                    address = addressParts[0] || '';
+                    city = addressParts[1] || '';
+                    state = addressParts[2] || '';
+                    zip = addressParts[3] || '';
+                }
+                
+                return {
+                    'Owner Name': `${firstName} ${lastName}`.trim(),
+                    'First Name': firstName,
+                    'Last Name': lastName,
+                    'Phone Number': phone,
+                    'Mobile': phone,
+                    'Company Name': row['Business Name'] || '',
+                    'Email': email,
+                    'Address': address.trim(),
+                    'City': city.trim(),
+                    'State': state.trim(),
+                    'Zip': zip.trim(),
+                    'Monthly Revenue': row['Turnover'] || '',
+                    'DOB': row['DOB'] || '',
+                    'TaxID': row['EIN'] || '',
+                    'SSN': row['SSN'] || '',
+                    'Business Start Date': row['Business Start Date'] || '',
+                    'Notes': row['Notes'] || ''
+                };
+            });
+        }
+
+        function getColumnValue(row, possibleNames) {
+            // Helper function to find a column value by trying multiple possible column names (case-insensitive)
+            for (let name of possibleNames) {
+                for (let key in row) {
+                    if (key.toLowerCase().trim() === name.toLowerCase().trim()) {
+                        return row[key];
+                    }
+                }
+            }
+            return '';
+        }
+
+        function normalizeDataFromOriginal(data) {
+            // Process original format
+            console.log('Normalizing original format data, row count:', data.length);
+            console.log('Sample row:', data[0]);
+            
+            const normalized = data.map((row, index) => {
+                const ownerName = getColumnValue(row, ['Owner Name', 'owner name', 'OwnerName']) || '';
+                const nameParts = ownerName.trim().split(/\s+/);
+                const firstName = nameParts[0] || '';
+                const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+
+                const mobilePhone = formatPhoneNumber(getColumnValue(row, ['Mobile', 'mobile', 'Cell Phone', 'cell phone']) || '');
+                const officePhone = formatPhoneNumber(getColumnValue(row, ['Phone Number', 'phone number', 'Phone', 'phone']) || '');
+                const phone = mobilePhone || officePhone;
+
+                if (index === 0) {
+                    console.log('First row normalized:');
+                    console.log('Owner Name:', ownerName);
+                    console.log('Phone:', phone);
+                    console.log('Company:', getColumnValue(row, ['Company Name', 'company name', 'Company', 'company']));
+                }
+
+                return {
+                    'Owner Name': ownerName,
+                    'First Name': firstName,
+                    'Last Name': lastName,
+                    'Phone Number': phone,
+                    'Mobile': phone,
+                    'Company Name': getColumnValue(row, ['Company Name', 'company name', 'Company', 'company']) || '',
+                    'Email': getColumnValue(row, ['Email', 'email']) || '',
+                    'Address': getColumnValue(row, ['Address', 'address', 'Address1', 'address1']) || '',
+                    'City': getColumnValue(row, ['City', 'city']) || '',
+                    'State': getColumnValue(row, ['State', 'state']) || '',
+                    'Zip': getColumnValue(row, ['Zip', 'zip', 'Zip Code', 'zip code', 'zipcode']) || '',
+                    'Monthly Revenue': getColumnValue(row, ['Monthly Revenue', 'monthly revenue', 'Revenue', 'revenue']) || '',
+                    'DOB': getColumnValue(row, ['DOB', 'dob', 'Date of Birth', 'date of birth', 'DateOfBirth']) || '',
+                    'TaxID': getColumnValue(row, ['TaxID', 'taxid', 'Tax ID', 'tax id', 'EIN', 'ein']) || '',
+                    'SSN': getColumnValue(row, ['SSN', 'ssn', 'Social Security Number', 'social security number']) || '',
+                    'Business Start Date': getColumnValue(row, ['Business Start Date', 'business start date', 'Start Date', 'start date', 'BusinessStartDate']) || '',
+                    'Notes': getColumnValue(row, ['Notes', 'notes', 'Note', 'note']) || ''
+                };
+            });
+            
+            console.log('Normalized data count:', normalized.length);
+            return normalized;
+        }
+
+        function createCRMFile(normalizedData) {
+            const crmHeaders = [
+                'First Name', 'Last Name', 'Phone Number', 'Cell Phone',
+                'Company Name', 'Email', 'Lead Source', 'Address',
+                'City', 'State', 'Zip', 'Business Type', 'Annual Revenue',
+                'Funding', 'Factor Rate', 'Funding Date', 'Term', 'Notes',
+                'Campaign', 'TaxID', 'SSN', 'Business Start Date', 'DOB'
+            ];
+
+            const rows = [crmHeaders.join(',')];
+
+            normalizedData.forEach((row, index) => {
+                const firstName = row['First Name'] || '';
+                const lastName = row['Last Name'] || '';
+                const phone = row['Phone Number'] || '';
+
+                // Validate data
+                const ssnPattern = /^\d{3}-?\d{2}-?\d{4}$/;
+                if (ssnPattern.test(firstName.replace(/\s/g, '')) || ssnPattern.test(lastName.replace(/\s/g, ''))) {
+                    console.error(`Row ${index + 2}: SSN found in name field!`);
+                }
+
+                const crmRow = [
+                    firstName,
+                    lastName,
+                    phone,
+                    phone,
+                    row['Company Name'] || '',
+                    row['Email'] || '',
+                    'WEB',
+                    row['Address'] || '',
+                    row['City'] || '',
+                    row['State'] || '',
+                    row['Zip'] || '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    row['Monthly Revenue'] || '',
+                    '',
+                    row['TaxID'] || '',
+                    formatSSN(row['SSN'] || ''),
+                    formatDate(row['Business Start Date'] || ''),
+                    formatDate(row['DOB'] || '')
+                ];
+
+                rows.push(crmRow.map(val => `"${val}"`).join(','));
+            });
+
+            return rows.join('\n');
+        }
+
+        function createNameOnlyFile(normalizedData) {
+            const rows = [];
+
+            normalizedData.forEach(row => {
+                const firstName = row['First Name'] || '';
+                const formattedFirstName = formatNameToProperCase(firstName);
+                const phone = row['Phone Number'] || '';
+
+                if (formattedFirstName && phone && !/^\d+$/.test(formattedFirstName)) {
+                    // No quotes, just comma-separated
+                    rows.push(`${formattedFirstName},${phone}`);
+                }
+            });
+
+            // No header row for iPhone format
+            return rows.join('\n');
+        }
+
+        function createVonageFile(normalizedData) {
+            const vonageHeaders = [
+                'First Name', 'Last Name', 'Work Phone', 'Home Phone', 'Mobile Phone',
+                'Work Email', 'Personal Email', 'Company Name', 'Title', 'Work Street',
+                'Work City', 'Work State', 'Work ZIP', 'Work Country', 'Home Street',
+                'Home city', 'Home State', 'Home ZIP', 'Home Country', 'Fax', 'Notes'
+            ];
+
+            const rows = [vonageHeaders.join(',')];
+
+            normalizedData.forEach(row => {
+                const firstName = row['First Name'] || '';
+                const lastName = row['Last Name'] || '';
+                const phone = row['Phone Number'] || '';
+
+                const vonageRow = [
+                    firstName,
+                    lastName,
+                    phone,           // Work Phone
+                    '',              // Home Phone (empty)
+                    phone,           // Mobile Phone (same as work)
+                    row['Email'] || '',  // Work Email
+                    '',              // Personal Email (empty)
+                    row['Company Name'] || '',
+                    '',              // Title (empty)
+                    row['Address'] || '',    // Work Street
+                    row['City'] || '',       // Work City
+                    row['State'] || '',      // Work State
+                    row['Zip'] || '',        // Work ZIP
+                    '',              // Work Country (empty)
+                    '',              // Home Street (empty)
+                    '',              // Home city (empty)
+                    '',              // Home State (empty)
+                    '',              // Home ZIP (empty)
+                    '',              // Home Country (empty)
+                    '',              // Fax (empty)
+                    row['Notes'] || row['Monthly Revenue'] || ''  // Notes
+                ];
+
+                rows.push(vonageRow.map(val => `"${val}"`).join(','));
+            });
+
+            return rows.join('\n');
+        }
+
+        async function handleFile(file) {
+            showStatus('Processing file... 🔄', 'processing');
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const csvText = e.target.result;
+                const { headers, data } = await processCSV(csvText);
+
+                // Detect format
+                const format = detectFormat(headers);
+                console.log('Detected format:', format);
+                console.log('Headers found:', headers);
+                console.log('Data rows:', data.length);
+
+                // Normalize data based on format
+                let normalizedData;
+                if (format === 'braintrust2') {
+                    normalizedData = normalizeDataFromBraintrust2(data);
+                    showStatus('Processing file... 🔄 <span class="format-badge">Braintrust2 (TLO) Format Detected</span>', 'processing');
+                } else if (format === 'braintrust') {
+                    normalizedData = normalizeDataFromBraintrust(data);
+                    showStatus('Processing file... 🔄 <span class="format-badge">Braintrust Format Detected</span>', 'processing');
+                } else {
+                    normalizedData = normalizeDataFromOriginal(data);
+                    showStatus('Processing file... 🔄 <span class="format-badge">Standard Format Detected</span>', 'processing');
+                }
+
+                processData(normalizedData, format);
+            };
+
+            reader.readAsText(file);
+        }
+
+        function processData(normalizedData, format) {
+            const crmFile = createCRMFile(normalizedData);
+            const nameOnlyFile = createNameOnlyFile(normalizedData);
+            const vonageFile = createVonageFile(normalizedData);
+
+            setupDownloads(crmFile, nameOnlyFile, vonageFile);
+            
+            let formatBadge = '<span class="format-badge">Standard Format</span>';
+            if (format === 'braintrust2') {
+                formatBadge = '<span class="format-badge">Braintrust2 (TLO) Format</span>';
+            } else if (format === 'braintrust') {
+                formatBadge = '<span class="format-badge">Braintrust Format</span>';
+            }
+            
+            showStatus(`Files processed successfully! ✅ ${formatBadge}`, 'success');
+        }
+
+        function setupDownloads(crmFile, nameOnlyFile, vonageFile) {
+            const crmBlob = new Blob([crmFile], { type: 'text/csv' });
+            const nameOnlyBlob = new Blob([nameOnlyFile], { type: 'text/csv' });
+            const vonageBlob = new Blob([vonageFile], { type: 'text/csv' });
+
+            document.getElementById('crmDownload').href = URL.createObjectURL(crmBlob);
+            document.getElementById('crmDownload').download = 'crm_import_' + Date.now() + '.csv';
+
+            document.getElementById('nameOnlyDownload').href = URL.createObjectURL(nameOnlyBlob);
+            document.getElementById('nameOnlyDownload').download = 'iphone_mass_texting_' + Date.now() + '.csv';
+
+            document.getElementById('vonageDownload').href = URL.createObjectURL(vonageBlob);
+            document.getElementById('vonageDownload').download = 'vonage_' + Date.now() + '.csv';
+
+            downloadSection.style.display = 'block';
+            instructions.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
