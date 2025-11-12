@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCS Report Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            padding: 20px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 24px 32px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .main-content {
+            padding: 24px;
+        }
+
+        .input-section {
+            margin-bottom: 24px;
+        }
+
+        .input-section label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #475569;
+        }
+
+        #fcsInput {
+            width: 100%;
+            min-height: 300px;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            resize: vertical;
+        }
+
+        #fcsInput:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .analyze-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .analyze-btn:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+        }
+
+        .results {
+            display: none;
+            margin-top: 32px;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .results-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .results-section h2 {
+            color: #1e293b;
+            margin-bottom: 16px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .results-section h3 {
+            color: #475569;
+            margin: 16px 0 12px 0;
+            font-size: 1.1rem;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .data-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .data-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .withholding-breakdown {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .withholding-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .withholding-item:last-child {
+            border-bottom: none;
+        }
+
+        .withholding-total {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .withholding-total-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #92400e;
+        }
+
+        .withholding-total-label {
+            color: #78350f;
+            font-size: 0.875rem;
+            margin-top: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.875rem;
+        }
+
+        td {
+            color: #1e293b;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .highlight-row {
+            background: #fef3c7 !important;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .affordable-box {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+
+        .affordable-box h3 {
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .affordable-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .affordable-details {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 FCS Report Analyzer</h1>
+            <p>Analyze withholding, terms, and affordable funding capacity</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <label for="fcsInput">Paste Full FCS Report:</label>
+                <textarea id="fcsInput" placeholder="Paste your complete FCS report here..."></textarea>
+                <button class="analyze-btn" onclick="analyzeFCS()">🔍 Analyze Report</button>
+            </div>
+
+            <div class="error" id="errorMsg"></div>
+
+            <div class="results" id="results">
+                <!-- Business Overview -->
+                <div class="results-section">
+                    <h2>🏢 Business Overview</h2>
+                    <div class="data-grid" id="businessOverview"></div>
+                </div>
+
+                <!-- Current Withholding -->
+                <div class="results-section">
+                    <h2>💰 Current Withholding Analysis</h2>
+                    <div id="withholdingAnalysis"></div>
+                </div>
+
+                <!-- Last Position Analysis -->
+                <div class="results-section">
+                    <h2>🎯 Last Position Analysis</h2>
+                    <div id="lastPositionAnalysis"></div>
+                </div>
+
+                <!-- Affordable Funding -->
+                <div class="results-section">
+                    <h2>📈 Affordable Funding Estimate</h2>
+                    <div id="affordableAnalysis"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function parseFCSReport(fcsText) {
+            const data = {};
+
+            // ===== 3-MONTH SUMMARY DATA =====
+            const summarySection = fcsText.match(/3-Month Summary\s*([\s\S]*?)(?=\n\n|$)/i);
+            if (summarySection) {
+                const summary = summarySection[1];
+
+                const businessMatch = summary.match(/Business Name:\s*(.+?)(?:\n|$)/i);
+                if (businessMatch) data.businessName = businessMatch[1].trim();
+
+                const positionMatch = summary.match(/Position \(ASSUME NEXT\):\s*(\d+)\s*active.*?(\d+)(?:st|nd|rd|th)/i);
+                if (positionMatch) {
+                    data.currentPositionCount = parseInt(positionMatch[1]);
+                    data.nextPosition = parseInt(positionMatch[2]);
+                }
+
+                const industryMatch = summary.match(/Industry:\s*(.+?)(?:\n|$)/i);
+                if (industryMatch) data.industry = industryMatch[1].trim();
+
+                const tibMatch = summary.match(/Time in Business:\s*(.+?)(?:\n|$)/i);
+                if (tibMatch) data.timeInBusiness = tibMatch[1].trim();
+
+                const avgRevenueMatch = summary.match(/Average True Revenue:\s*\$?([\d,]+\.?\d*)/i);
+                if (avgRevenueMatch) data.avgRevenue = parseFloat(avgRevenueMatch[1].replace(/,/g, ''));
+
+                const negDaysMatch = summary.match(/Negative Days:\s*(\d+)/i);
+                if (negDaysMatch) data.negativeDays = parseInt(negDaysMatch[1]);
+
+                const avgNegDaysMatch = summary.match(/Average Negative Days:\s*([\d.]+)/i);
+                if (avgNegDaysMatch) data.avgNegativeDays = parseFloat(avgNegDaysMatch[1]);
+
+                const avgBalanceMatch = summary.match(/Average Bank Balance:\s*\$?([\d,]+\.?\d*)/i);
+                if (avgBalanceMatch) data.avgBankBalance = parseFloat(avgBalanceMatch[1].replace(/,/g, ''));
+
+                const stateMatch = summary.match(/State:\s*([A-Z]{2})/i);
+                if (stateMatch) data.state = stateMatch[1].toUpperCase();
+
+                const lastDepositMatch = summary.match(/Last MCA Deposit:\s*\$?([\d,]+\.?\d*)\s*on\s*([\d\/]+)\s*from\s*(.+?)(?:\n|$)/i);
+                if (lastDepositMatch) {
+                    data.lastDeposit = {
+                        amount: parseFloat(lastDepositMatch[1].replace(/,/g, '')),
+                        date: lastDepositMatch[2],
+                        lender: lastDepositMatch[3].trim()
+                    };
+                }
+            }
+
+            // ===== RECURRING MCA PAYMENTS =====
+            data.mcaPositions = [];
+            const positionRegex = /Position (\d+):\s*(.+?)\s*-\s*\$?([\d,]+\.?\d*)\s*(weekly|daily)\s*\nLast pull:\s*([\d\/]+)\s*-\s*Status:\s*(Active|Stopped)/gi;
+            let posMatch;
+            while ((posMatch = positionRegex.exec(fcsText)) !== null) {
+                data.mcaPositions.push({
+                    position: parseInt(posMatch[1]),
+                    lender: posMatch[2].trim(),
+                    amount: parseFloat(posMatch[3].replace(/,/g, '')),
+                    frequency: posMatch[4].toLowerCase(),
+                    lastPull: posMatch[5],
+                    status: posMatch[6].toLowerCase()
+                });
+            }
+
+            return data;
+        }
+
+        function calculateWithholding(positions, revenue) {
+            let totalWithhold = 0;
+            const breakdown = [];
+
+            positions.forEach(pos => {
+                if (pos.status === 'active') {
+                    const dailyRate = pos.frequency === 'weekly' ? pos.amount / 5 : pos.amount;
+                    const monthlyPayment = dailyRate * 21;
+                    const withholdPct = (monthlyPayment / revenue) * 100;
+                    totalWithhold += withholdPct;
+
+                    breakdown.push({
+                        lender: pos.lender,
+                        payment: pos.amount,
+                        frequency: pos.frequency,
+                        dailyRate: dailyRate,
+                        monthlyPayment: monthlyPayment,
+                        withholdPct: withholdPct
+                    });
+                }
+            });
+
+            return { totalWithhold, breakdown };
+        }
+
+        function analyzeLastPosition(deposit, payment, frequency, revenue) {
+            const scenarios = [];
+
+            // Determine if deposit is clean number
+            const isClean = deposit.amount % 1000 === 0 || deposit.amount % 5000 === 0;
+
+            // Fee scenarios to try
+            const feeScenarios = isClean ? [0, 0.01, 0.02, 0.03, 0.05, 0.10] : [0];
+
+            // Term ranges based on frequency
+            const terms = frequency === 'weekly'
+                ? Array.from({length: 31}, (_, i) => 10 + i * 2) // 10, 12, 14... 70
+                : Array.from({length: 17}, (_, i) => 60 + i * 10); // 60, 70, 80... 220
+
+            terms.forEach(term => {
+                const paymentsPerTerm = frequency === 'weekly' ? term : term;
+                const totalPayback = payment * paymentsPerTerm;
+
+                feeScenarios.forEach(feePercent => {
+                    const originalFunding = deposit.amount / (1 - feePercent);
+                    const factor = totalPayback / originalFunding;
+
+                    // Only include realistic factors
+                    if (factor >= 1.20 && factor <= 1.60) {
+                        let likelihood = 'unlikely';
+                        if (Math.abs(factor - 1.49) < 0.01) {
+                            likelihood = 'most-likely';
+                        } else if (factor >= 1.42 && factor <= 1.55) {
+                            likelihood = 'realistic';
+                        } else if (factor >= 1.30 && factor <= 1.41) {
+                            likelihood = 'possible-low';
+                        } else if (factor >= 1.56 && factor <= 1.60) {
+                            likelihood = 'possible-high';
+                        }
+
+                        scenarios.push({
+                            term,
+                            termUnit: frequency === 'weekly' ? 'weeks' : 'days',
+                            originalFunding: Math.round(originalFunding),
+                            fee: Math.round(originalFunding - deposit.amount),
+                            feePercent: (feePercent * 100).toFixed(1),
+                            totalPayback: Math.round(totalPayback),
+                            factor: factor.toFixed(2),
+                            likelihood
+                        });
+                    }
+                });
+            });
+
+            // Sort by likelihood (most likely first)
+            const likelihoodOrder = { 'most-likely': 0, 'realistic': 1, 'possible-low': 2, 'possible-high': 3, 'unlikely': 4 };
+            scenarios.sort((a, b) => {
+                if (likelihoodOrder[a.likelihood] !== likelihoodOrder[b.likelihood]) {
+                    return likelihoodOrder[a.likelihood] - likelihoodOrder[b.likelihood];
+                }
+                return Math.abs(parseFloat(a.factor) - 1.49) - Math.abs(parseFloat(b.factor) - 1.49);
+            });
+
+            return scenarios.slice(0, 10); // Return top 10 scenarios
+        }
+
+        function calculateAffordableFunding(additionalWithhold, revenue, selectedScenario, frequency) {
+            const additionalPercent = parseFloat(additionalWithhold) || 10;
+
+            // Calculate available payment capacity
+            const availableMonthlyPayment = (additionalPercent / 100) * revenue;
+            const availableDailyRate = availableMonthlyPayment / 21;
+            const availablePayment = frequency === 'weekly' ? availableDailyRate * 5 : availableDailyRate;
+
+            // Calculate funding using selected scenario's terms
+            const paymentsPerTerm = frequency === 'weekly' ? selectedScenario.term : selectedScenario.term;
+            const totalPayback = availablePayment * paymentsPerTerm;
+            const affordableFunding = totalPayback / parseFloat(selectedScenario.factor);
+
+            return {
+                availablePayment: availablePayment,
+                frequency: frequency,
+                term: selectedScenario.term,
+                termUnit: selectedScenario.termUnit,
+                factor: selectedScenario.factor,
+                totalPayback: totalPayback,
+                affordableFunding: affordableFunding,
+                additionalWithhold: additionalPercent
+            };
+        }
+
+        function analyzeFCS() {
+            const fcsText = document.getElementById('fcsInput').value;
+            const errorDiv = document.getElementById('errorMsg');
+            const resultsDiv = document.getElementById('results');
+
+            if (!fcsText.trim()) {
+                errorDiv.textContent = 'Please paste an FCS report first.';
+                errorDiv.classList.add('active');
+                resultsDiv.classList.remove('active');
+                return;
+            }
+
+            errorDiv.classList.remove('active');
+
+            try {
+                const data = parseFCSReport(fcsText);
+
+                if (!data.avgRevenue) {
+                    throw new Error('Could not find Average True Revenue in the report.');
+                }
+
+                // Business Overview
+                const overviewHTML = `
+                    <div class="data-item">
+                        <div class="data-label">Business Name</div>
+                        <div class="data-value">${data.businessName || 'N/A'}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Industry</div>
+                        <div class="data-value">${data.industry || 'N/A'}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">State</div>
+                        <div class="data-value">${data.state || 'N/A'}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Current Position</div>
+                        <div class="data-value">${data.currentPositionCount || 'N/A'} active</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Next Position</div>
+                        <div class="data-value">${data.nextPosition ? data.nextPosition + getOrdinalSuffix(data.nextPosition) : 'N/A'}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Avg Monthly Revenue</div>
+                        <div class="data-value">${data.avgRevenue.toLocaleString()}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Avg Bank Balance</div>
+                        <div class="data-value">${(data.avgBankBalance || 0).toLocaleString()}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Negative Days</div>
+                        <div class="data-value">${data.negativeDays !== undefined ? data.negativeDays : 'N/A'}</div>
+                    </div>
+                `;
+                document.getElementById('businessOverview').innerHTML = overviewHTML;
+
+                // Withholding Analysis
+                const activePositions = data.mcaPositions.filter(p => p.status === 'active');
+                if (activePositions.length > 0) {
+                    const withholdingData = calculateWithholding(activePositions, data.avgRevenue);
+
+                    let withholdHTML = '<div class="withholding-breakdown">';
+                    withholdingData.breakdown.forEach(item => {
+                        withholdHTML += `
+                            <div class="withholding-item">
+                                <div>
+                                    <strong>${item.lender}</strong><br>
+                                    <span style="font-size: 0.875rem; color: #64748b;">
+                                        ${item.payment.toLocaleString()} ${item.frequency}
+                                        (Daily: ${item.dailyRate.toFixed(2)} × 21 = ${item.monthlyPayment.toFixed(2)}/mo)
+                                    </span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <strong style="color: #f59e0b; font-size: 1.1rem;">${item.withholdPct.toFixed(2)}%</strong>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    withholdHTML += '</div>';
+
+                    withholdHTML += `
+                        <div class="withholding-total">
+                            <div class="withholding-total-number">${withholdingData.totalWithhold.toFixed(2)}%</div>
+                            <div class="withholding-total-label">TOTAL CURRENT WITHHOLDING</div>
+                        </div>
+                    `;
+
+                    document.getElementById('withholdingAnalysis').innerHTML = withholdHTML;
+                } else {
+                    document.getElementById('withholdingAnalysis').innerHTML = '<p>No active MCA positions found.</p>';
+                }
+
+                // Last Position Analysis
+                if (data.lastDeposit && activePositions.length > 0) {
+                    // Find matching payment
+                    const matchingPosition = activePositions.find(p =>
+                        p.lender.toLowerCase().includes(data.lastDeposit.lender.toLowerCase().substring(0, 10)) ||
+                        data.lastDeposit.lender.toLowerCase().includes(p.lender.toLowerCase().substring(0, 10))
+                    );
+
+                    if (matchingPosition) {
+                        const scenarios = analyzeLastPosition(
+                            data.lastDeposit,
+                            matchingPosition.amount,
+                            matchingPosition.frequency,
+                            data.avgRevenue
+                        );
+
+                        let posAnalysisHTML = `
+                            <p><strong>Deposit:</strong> ${data.lastDeposit.amount.toLocaleString()} on ${data.lastDeposit.date} from ${data.lastDeposit.lender}</p>
+                            <p><strong>Payment:</strong> ${matchingPosition.amount.toLocaleString()} ${matchingPosition.frequency}</p>
+                            <h3>Possible Term Scenarios:</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Term</th>
+                                        <th>Original Funding</th>
+                                        <th>Fee</th>
+                                        <th>Total Payback</th>
+                                        <th>Factor</th>
+                                        <th>Likelihood</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+
+                        scenarios.forEach(s => {
+                            const badgeClass = s.likelihood === 'most-likely' ? 'badge-success' :
+                                             s.likelihood === 'realistic' ? 'badge-info' :
+                                             'badge-warning';
+                            const rowClass = s.likelihood === 'most-likely' ? 'highlight-row' : '';
+
+                            posAnalysisHTML += `
+                                <tr class="${rowClass}">
+                                    <td>${s.term} ${s.termUnit}</td>
+                                    <td>${s.originalFunding.toLocaleString()}</td>
+                                    <td>${s.fee.toLocaleString()} (${s.feePercent}%)</td>
+                                    <td>${s.totalPayback.toLocaleString()}</td>
+                                    <td><strong>${s.factor}</strong></td>
+                                    <td><span class="badge ${badgeClass}">${s.likelihood.replace('-', ' ')}</span></td>
+                                </tr>
+                            `;
+                        });
+
+                        posAnalysisHTML += '</tbody></table>';
+                        document.getElementById('lastPositionAnalysis').innerHTML = posAnalysisHTML;
+
+                        // Affordable Funding (use most likely scenario)
+                        const bestScenario = scenarios[0];
+                        const affordable = calculateAffordableFunding(10, data.avgRevenue, bestScenario, matchingPosition.frequency);
+
+                        const affordableHTML = `
+                            <div class="affordable-box">
+                                <h3>Estimated Affordable Funding (${affordable.additionalWithhold}% Additional Capacity)</h3>
+                                <div class="affordable-amount">${Math.round(affordable.affordableFunding).toLocaleString()}</div>
+                                <div class="affordable-details">
+                                    • Payment: ${Math.round(affordable.availablePayment).toLocaleString()} ${affordable.frequency}<br>
+                                    • Term: ${affordable.term} ${affordable.termUnit}<br>
+                                    • Factor: ${affordable.factor}<br>
+                                    • Total Payback: ${Math.round(affordable.totalPayback).toLocaleString()}
+                                </div>
+                            </div>
+                            <p style="margin-top: 16px; color: #64748b; font-size: 0.875rem;">
+                                <strong>Note:</strong> This estimate assumes the same terms and factor as the most likely scenario from the last position analysis.
+                                Actual offers may vary based on lender underwriting and current market conditions.
+                            </p>
+                        `;
+                        document.getElementById('affordableAnalysis').innerHTML = affordableHTML;
+
+                    } else {
+                        document.getElementById('lastPositionAnalysis').innerHTML = '<p>Could not match last deposit to an active payment position.</p>';
+                        document.getElementById('affordableAnalysis').innerHTML = '<p>Affordable funding calculation unavailable - need last position analysis first.</p>';
+                    }
+                } else {
+                    document.getElementById('lastPositionAnalysis').innerHTML = '<p>No last MCA deposit information found.</p>';
+                    document.getElementById('affordableAnalysis').innerHTML = '<p>Affordable funding calculation unavailable - need last position analysis first.</p>';
+                }
+
+                resultsDiv.classList.add('active');
+                resultsDiv.scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                errorDiv.textContent = 'Error analyzing FCS: ' + error.message;
+                errorDiv.classList.add('active');
+                resultsDiv.classList.remove('active');
+                console.error(error);
+            }
+        }
+
+        function getOrdinalSuffix(num) {
+            const j = num % 10;
+            const k = num % 100;
+            if (j == 1 && k != 11) return 'st';
+            if (j == 2 && k != 12) return 'nd';
+            if (j == 3 && k != 13) return 'rd';
+            return 'th';
+        }
+    </script>
+</body>
+</html>

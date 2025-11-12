@@ -187,6 +187,13 @@
             background-clip: text;
         }
 
+        .card:nth-child(6) .card-icon {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 30px 16px;
@@ -236,6 +243,7 @@
         .card:nth-child(3) { animation-delay: 0.3s; }
         .card:nth-child(4) { animation-delay: 0.4s; }
         .card:nth-child(5) { animation-delay: 0.5s; }
+        .card:nth-child(6) { animation-delay: 0.6s; }
     </style>
 </head>
 <body>
@@ -315,6 +323,20 @@
                     <li>Perfect for bank statements</li>
                 </ul>
                 <span class="btn">Open PDF Splitter →</span>
+            </a>
+
+            <a href="./FCS-Analyzer/analyzer.html" class="card">
+                <div class="card-icon">📊</div>
+                <h2>FCS Report Analyzer</h2>
+                <p>Analyze withholding, reverse-engineer last position terms, and estimate affordable funding capacity.</p>
+                <ul class="card-features">
+                    <li>Calculate current withholding %</li>
+                    <li>Reverse-engineer position terms</li>
+                    <li>Estimate affordable funding</li>
+                    <li>Analyze payment scenarios</li>
+                    <li>Instant insights from FCS reports</li>
+                </ul>
+                <span class="btn">Open Analyzer →</span>
             </a>
         </div>
     </div>
