@@ -473,6 +473,7 @@
                     <div id="parseStatus" class="parse-status"></div>
                 </div>
             </div>
+
             <form id="merchantForm" class="merchant-form">
                 <div class="form-row">
                     <div class="form-group">
@@ -686,7 +687,7 @@
                 document.getElementById('currentPositions').value = positionsMatch[1].trim();
                 parsed.found.push('Current Positions');
             }
-            
+
             // Extract Last MCA Deposit and replace notes
             const mcaMatch = summary.match(/Last MCA Deposit:\s*(.+?)(?:\n|$)/i);
             if (mcaMatch) {
