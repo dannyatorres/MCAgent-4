@@ -374,6 +374,8 @@
 
                 const result = await response.json();
 
+                console.log('What n8n returned:', result);  // ADD THIS LINE
+
                 if (result.error) {
                     throw new Error(result.error);
                 }
