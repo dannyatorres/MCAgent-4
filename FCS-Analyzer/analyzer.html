@@ -29,7 +29,7 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
             padding: 24px 32px;
             text-align: center;
@@ -74,12 +74,12 @@
 
         #fcsInput:focus {
             outline: none;
-            border-color: #f59e0b;
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .analyze-btn {
-            background: #f59e0b;
+            background: #3b82f6;
             color: white;
             border: none;
             padding: 12px 32px;
@@ -92,7 +92,7 @@
         }
 
         .analyze-btn:hover {
-            background: #d97706;
+            background: #2563eb;
             transform: translateY(-1px);
         }
 
@@ -175,8 +175,8 @@
         }
 
         .withholding-total {
-            background: #fef3c7;
-            border: 2px solid #f59e0b;
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
             border-radius: 8px;
             padding: 16px;
             margin-top: 16px;
@@ -294,7 +294,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 FCS Report Analyzer (Updated 02:19 AM)</h1>
+            <h1>📊 FCS Report Analyzer (Updated 03:27 AM)</h1>
             <p>Analyze withholding, terms, and affordable funding capacity</p>
         </div>
 
@@ -324,12 +324,6 @@
                 <div class="results-section">
                     <h2>🎯 Last Position Analysis</h2>
                     <div id="lastPositionAnalysis"></div>
-                </div>
-
-                <!-- Affordable Funding -->
-                <div class="results-section">
-                    <h2>📈 Affordable Funding Estimate</h2>
-                    <div id="affordableAnalysis"></div>
                 </div>
             </div>
         </div>
@@ -477,7 +471,7 @@
                                 </span>
                             </div>
                             <div style="text-align: right;">
-                                <strong style="color: #f59e0b; font-size: 1.1rem;">${item.withholdPct.toFixed(2)}%</strong>
+                                <strong style="color: #3b82f6; font-size: 1.1rem;">${item.withholdPct.toFixed(2)}%</strong>
                             </div>
                         </div>
                     `;
@@ -541,26 +535,6 @@
                 document.getElementById('lastPositionAnalysis').innerHTML = posAnalysisHTML;
             } else {
                 document.getElementById('lastPositionAnalysis').innerHTML = '<p>No last MCA deposit information found.</p>';
-            }
-
-            // Affordable Funding
-            if (data.affordableFunding) {
-                const affordable = data.affordableFunding;
-                const affordableHTML = `
-                    <div class="affordable-box">
-                        <h3>Estimated Affordable Funding (${affordable.additionalWithhold}% Additional Capacity)</h3>
-                        <div class="affordable-amount">${Math.round(affordable.affordableFunding).toLocaleString()}</div>
-                        <div class="affordable-details">
-                            • Payment: ${Math.round(affordable.availablePayment).toLocaleString()} ${affordable.frequency}<br>
-                            • Term: ${affordable.term} ${affordable.termUnit}<br>
-                            • Factor: ${affordable.factor}<br>
-                            • Total Payback: ${Math.round(affordable.totalPayback).toLocaleString()}
-                        </div>
-                    </div>
-                `;
-                document.getElementById('affordableAnalysis').innerHTML = affordableHTML;
-            } else {
-                document.getElementById('affordableAnalysis').innerHTML = '<p>Affordable funding calculation unavailable.</p>';
             }
 
             resultsDiv.classList.add('active');
