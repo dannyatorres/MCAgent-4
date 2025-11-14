@@ -294,7 +294,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 FCS Report Analyzer (Updated 11:30 PM)</h1>
+            <h1>📊 FCS Report Analyzer (Updated 12:09 AM)</h1>
             <p>Analyze withholding, terms, and affordable funding capacity</p>
         </div>
 
@@ -372,10 +372,32 @@
                     throw new Error('Analysis failed: ' + errorText);
                 }
 
-                let result = await response.json();
+                // Get response as text first to inspect it
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('Parse error:', parseError);
+                    throw new Error('Invalid JSON response from server: ' + parseError.message);
+                }
+
+                console.log('Parsed response:', result);
+
+                // Handle n8n array wrapper - if response is an array, take first item
+                if (Array.isArray(result)) {
+                    result = result[0];
+                }
+
+                // Handle n8n json wrapper
+                if (result.json) {
+                    result = result.json;
+                }
 
                 // Check if it's wrapped in debug object
-                if (result.debug) {
+                if (result.debug && result.debug.text) {
                     let cleanText = result.debug.text;
 
                     // Remove markdown code blocks
@@ -391,10 +413,16 @@
                     result = JSON.parse(cleanText.trim());
                 }
 
-                console.log('Cleaned result:', result);
+                console.log('Final cleaned result:', result);
 
                 if (result.error) {
                     throw new Error(result.error);
+                }
+
+                // Validate we have the expected structure
+                if (!result.businessOverview) {
+                    console.error('Invalid result structure:', result);
+                    throw new Error('Invalid response structure - missing businessOverview');
                 }
 
                 displayResults(result);
@@ -403,7 +431,7 @@
                 errorDiv.textContent = 'Error analyzing FCS: ' + error.message;
                 errorDiv.classList.add('active');
                 resultsDiv.classList.remove('active');
-                console.error(error);
+                console.error('Full error:', error);
             } finally {
                 analyzeBtn.disabled = false;
                 analyzeBtn.textContent = '🔍 Analyze Report';
