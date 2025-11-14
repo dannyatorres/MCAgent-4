@@ -294,7 +294,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 FCS Report Analyzer (Updated 12:14 AM)</h1>
+            <h1>📊 FCS Report Analyzer (Updated 12:17 AM)</h1>
             <p>Analyze withholding, terms, and affordable funding capacity</p>
         </div>
 
@@ -372,7 +372,18 @@
                     throw new Error('Analysis failed: ' + errorText);
                 }
 
-                let result = await response.json();
+                // Get raw response first
+                const rawText = await response.text();
+                console.log('Raw response text:', rawText);
+
+                let result;
+                try {
+                    result = JSON.parse(rawText);
+                } catch (e) {
+                    console.error('JSON parse failed:', e);
+                    console.error('Response was:', rawText.substring(0, 500));
+                    throw new Error('Invalid JSON from server');
+                }
 
                 // Check if it's wrapped in debug object
                 if (result.debug) {
