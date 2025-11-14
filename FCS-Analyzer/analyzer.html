@@ -294,7 +294,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 FCS Report Analyzer (Updated 11:18 PM)</h1>
+            <h1>📊 FCS Report Analyzer (Updated 11:30 PM)</h1>
             <p>Analyze withholding, terms, and affordable funding capacity</p>
         </div>
 
@@ -494,6 +494,7 @@
                         <thead>
                             <tr>
                                 <th>Term</th>
+                                <th>Payment</th>
                                 <th>Original Funding</th>
                                 <th>Fee</th>
                                 <th>Total Payback</th>
@@ -513,6 +514,7 @@
                     posAnalysisHTML += `
                         <tr class="${rowClass}">
                             <td>${s.term} ${s.termUnit}</td>
+                            <td>${lastPos.payment.toLocaleString()} ${lastPos.frequency}</td>
                             <td>${s.originalFunding.toLocaleString()}</td>
                             <td>${s.fee.toLocaleString()} (${s.feePercent}%)</td>
                             <td>${s.totalPayback.toLocaleString()}</td>
