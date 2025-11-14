@@ -294,7 +294,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 FCS Report Analyzer</h1>
+            <h1>📊 FCS Report Analyzer (Updated 11:18 PM)</h1>
             <p>Analyze withholding, terms, and affordable funding capacity</p>
         </div>
 
@@ -372,15 +372,31 @@
                     throw new Error('Analysis failed: ' + errorText);
                 }
 
-                const result = await response.json();
+                let result = await response.json();
 
-                console.log('What n8n returned:', result);  // ADD THIS LINE
+                // Check if it's wrapped in debug object
+                if (result.debug) {
+                    let cleanText = result.debug.text;
+
+                    // Remove markdown code blocks
+                    if (cleanText.includes('```')) {
+                        cleanText = cleanText.split('```')[1];
+                        if (cleanText.startsWith('json')) {
+                            cleanText = cleanText.substring(4);
+                        }
+                        cleanText = cleanText.split('```')[0];
+                    }
+
+                    // Parse the cleaned JSON
+                    result = JSON.parse(cleanText.trim());
+                }
+
+                console.log('Cleaned result:', result);
 
                 if (result.error) {
                     throw new Error(result.error);
                 }
 
-                // Display results
                 displayResults(result);
 
             } catch (error) {
