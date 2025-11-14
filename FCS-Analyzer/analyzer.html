@@ -345,6 +345,12 @@
                     <h2>🎯 Last Position Analysis</h2>
                     <div id="lastPositionAnalysis"></div>
                 </div>
+
+                <!-- Affordable Funding Scenarios -->
+                <div class="results-section">
+                    <h2>💵 Affordable Funding Scenarios</h2>
+                    <div id="affordableAnalysis"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -555,6 +561,98 @@
                 document.getElementById('lastPositionAnalysis').innerHTML = posAnalysisHTML;
             } else {
                 document.getElementById('lastPositionAnalysis').innerHTML = '<p>No last MCA deposit information found.</p>';
+            }
+
+            // Affordable Funding Scenarios
+            if (data.affordableFundingScenarios) {
+                const afs = data.affordableFundingScenarios;
+                let afsHTML = '';
+
+                // Most Likely Range
+                if (afs.mostLikelyRange) {
+                    const mlr = afs.mostLikelyRange;
+                    afsHTML += `
+                        <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 24px; border-radius: 12px; margin-bottom: 20px;">
+                            <h4 style="margin-bottom: 10px; color: white; font-size: 1rem;">🎯 Most Likely Fundable Range</h4>
+                            <div style="font-size: 1.8rem; font-weight: 700; margin-bottom: 8px;">
+                                $${mlr.minFunding.toLocaleString()} - $${mlr.maxFunding.toLocaleString()}
+                            </div>
+                            <div style="font-size: 0.9rem; opacity: 0.95;">
+                                <strong>Typical Terms:</strong> ${mlr.typicalTermRange}<br>
+                                <strong>Typical Factors:</strong> ${mlr.typicalFactorRange}<br>
+                                <strong>Why:</strong> ${mlr.reasoning}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Helper function to render scenario table
+                const renderScenarioTable = (scenarios, title, color) => {
+                    if (!scenarios || scenarios.length === 0) return '';
+
+                    let html = `
+                        <h3 style="margin-top: 20px; margin-bottom: 10px; font-size: 1.1rem;">${color} ${title}</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Scenario</th>
+                                    <th>Funding</th>
+                                    <th>Term</th>
+                                    <th>Payment</th>
+                                    <th>Factor</th>
+                                    <th>Total Payback</th>
+                                    <th>Withholding</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    scenarios.forEach(s => {
+                        html += `
+                            <tr>
+                                <td>${s.name}</td>
+                                <td><strong>$${s.funding.toLocaleString()}</strong></td>
+                                <td>${s.term} ${s.termUnit}</td>
+                                <td>$${s.payment.toLocaleString()} ${s.paymentFrequency}</td>
+                                <td>${s.factor}</td>
+                                <td>$${s.totalPayback.toLocaleString()}</td>
+                                <td style="font-size: 0.85rem;">${s.targetWithholding}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="7" style="font-size: 0.85rem; color: #64748b; padding: 8px 12px; background: #f9fafb; border-bottom: 2px solid #e5e5ea;">
+                                    <em>${s.reasoning}</em>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    html += '</tbody></table>';
+                    return html;
+                };
+
+                // Render all tiers
+                afsHTML += renderScenarioTable(afs.conservative, 'Conservative Scenarios', '🟢');
+                afsHTML += renderScenarioTable(afs.moderate, 'Moderate Scenarios', '🟡');
+                afsHTML += renderScenarioTable(afs.aggressive, 'Aggressive Scenarios', '🔴');
+
+                // Considerations
+                if (afs.considerations && afs.considerations.length > 0) {
+                    afsHTML += '<h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 1.1rem;">⚠️ Important Considerations</h3>';
+                    afs.considerations.forEach(consideration => {
+                        afsHTML += `
+                            <div style="background: #f5f5f7; padding: 16px; border-left: 4px solid #f59e0b; margin-bottom: 12px; border-radius: 8px;">
+                                <strong style="color: #1d1d1f;">${consideration.category}:</strong>
+                                <ul style="margin: 8px 0 0 20px; color: #1d1d1f;">
+                                    ${consideration.points.map(point => `<li>${point}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    });
+                }
+
+                document.getElementById('affordableAnalysis').innerHTML = afsHTML;
+            } else {
+                document.getElementById('affordableAnalysis').innerHTML = '<p>Affordable funding calculation unavailable.</p>';
             }
 
             resultsDiv.classList.add('active');
