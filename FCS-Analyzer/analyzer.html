@@ -350,28 +350,45 @@
 
             errorDiv.classList.remove('active');
 
+            // Show loading
+            const analyzeBtn = document.querySelector('.analyze-btn');
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = '⏳ Analyzing...';
+
             try {
-                // Call n8n webhook for parsing and analysis
+                // Call n8n webhook
                 const response = await fetch('https://dannyatorres.app.n8n.cloud/webhook/fcs-analysis', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fcs_text: fcsText })
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        fcs_text: fcsText
+                    })
                 });
 
                 if (!response.ok) {
-                    throw new Error('Analysis failed');
+                    const errorText = await response.text();
+                    throw new Error('Analysis failed: ' + errorText);
                 }
 
-                const data = await response.json();
+                const result = await response.json();
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
 
                 // Display results
-                displayResults(data);
+                displayResults(result);
 
             } catch (error) {
                 errorDiv.textContent = 'Error analyzing FCS: ' + error.message;
                 errorDiv.classList.add('active');
                 resultsDiv.classList.remove('active');
                 console.error(error);
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = '🔍 Analyze Report';
             }
         }
 
@@ -379,7 +396,7 @@
             const resultsDiv = document.getElementById('results');
 
             // Business Overview
-            const overview = data.businessOverview;
+            const overview = data.businessOverview || {};
             const overviewHTML = `
                 <div class="data-item">
                     <div class="data-label">Business Name</div>
@@ -417,8 +434,8 @@
             document.getElementById('businessOverview').innerHTML = overviewHTML;
 
             // Withholding Analysis
-            const withholding = data.withholding;
-            if (withholding.breakdown.length > 0) {
+            const withholding = data.withholding || {};
+            if (withholding.breakdown && withholding.breakdown.length > 0) {
                 let withholdHTML = '<div class="withholding-breakdown">';
                 withholding.breakdown.forEach(item => {
                     withholdHTML += `
@@ -437,31 +454,28 @@
                     `;
                 });
                 withholdHTML += '</div>';
-
                 withholdHTML += `
                     <div class="withholding-total">
-                        <div class="withholding-total-number">${withholding.total.toFixed(2)}%</div>
+                        <div class="withholding-total-number">${withholding.totalWithhold.toFixed(2)}%</div>
                         <div class="withholding-total-label">TOTAL CURRENT WITHHOLDING</div>
                     </div>
                 `;
-
                 document.getElementById('withholdingAnalysis').innerHTML = withholdHTML;
             } else {
                 document.getElementById('withholdingAnalysis').innerHTML = '<p>No active MCA positions found.</p>';
             }
 
             // Last Position Analysis
-            const lastPos = data.lastPositionAnalysis;
-            if (lastPos && lastPos.scenarios) {
+            if (data.lastPositionAnalysis && data.lastPositionAnalysis.scenarios) {
+                const lastPos = data.lastPositionAnalysis;
                 let posAnalysisHTML = `
                     <p><strong>Deposit:</strong> ${lastPos.deposit.amount.toLocaleString()} on ${lastPos.deposit.date} from ${lastPos.deposit.lender}</p>
-                    ${lastPos.lenderProfile ? `<p><strong>Lender Profile:</strong> ${lastPos.lenderProfile.notes}</p>` : ''}
+                    <p><strong>Payment:</strong> ${lastPos.payment.toLocaleString()} ${lastPos.frequency}</p>
                     <h3>Possible Term Scenarios:</h3>
                     <table>
                         <thead>
                             <tr>
                                 <th>Term</th>
-                                <th>Payment</th>
                                 <th>Original Funding</th>
                                 <th>Fee</th>
                                 <th>Total Payback</th>
@@ -481,7 +495,6 @@
                     posAnalysisHTML += `
                         <tr class="${rowClass}">
                             <td>${s.term} ${s.termUnit}</td>
-                            <td>${s.payment.toLocaleString()} ${s.frequency}</td>
                             <td>${s.originalFunding.toLocaleString()}</td>
                             <td>${s.fee.toLocaleString()} (${s.feePercent}%)</td>
                             <td>${s.totalPayback.toLocaleString()}</td>
@@ -498,8 +511,8 @@
             }
 
             // Affordable Funding
-            const affordable = data.affordableFunding;
-            if (affordable) {
+            if (data.affordableFunding) {
+                const affordable = data.affordableFunding;
                 const affordableHTML = `
                     <div class="affordable-box">
                         <h3>Estimated Affordable Funding (${affordable.additionalWithhold}% Additional Capacity)</h3>
@@ -511,10 +524,6 @@
                             • Total Payback: ${Math.round(affordable.totalPayback).toLocaleString()}
                         </div>
                     </div>
-                    <p style="margin-top: 16px; color: #64748b; font-size: 0.875rem;">
-                        <strong>Note:</strong> This estimate assumes the same terms and factor as the most likely scenario from the last position analysis.
-                        Actual offers may vary based on lender underwriting and current market conditions.
-                    </p>
                 `;
                 document.getElementById('affordableAnalysis').innerHTML = affordableHTML;
             } else {
