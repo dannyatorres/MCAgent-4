@@ -294,7 +294,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 FCS Report Analyzer (Updated 12:17 AM)</h1>
+            <h1>📊 FCS Report Analyzer (Updated 02:19 AM)</h1>
             <p>Analyze withholding, terms, and affordable funding capacity</p>
         </div>
 
@@ -505,12 +505,12 @@
                         <thead>
                             <tr>
                                 <th>Term</th>
-                                <th>Payment</th>
                                 <th>Original Funding</th>
                                 <th>Fee</th>
                                 <th>Total Payback</th>
                                 <th>Factor</th>
                                 <th>Likelihood</th>
+                                <th>Reasoning</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -518,19 +518,21 @@
 
                 lastPos.scenarios.forEach(s => {
                     const badgeClass = s.likelihood === 'most-likely' ? 'badge-success' :
-                                     s.likelihood === 'realistic' ? 'badge-info' :
-                                     'badge-warning';
+                                     s.likelihood === 'very-likely' ? 'badge-info' :
+                                     s.likelihood === 'likely' ? 'badge-info' :
+                                     s.likelihood === 'possible' ? 'badge-warning' :
+                                     'badge-danger';
                     const rowClass = s.likelihood === 'most-likely' ? 'highlight-row' : '';
 
                     posAnalysisHTML += `
                         <tr class="${rowClass}">
                             <td>${s.term} ${s.termUnit}</td>
-                            <td>${lastPos.payment.toLocaleString()} ${lastPos.frequency}</td>
                             <td>${s.originalFunding.toLocaleString()}</td>
                             <td>${s.fee.toLocaleString()} (${s.feePercent}%)</td>
                             <td>${s.totalPayback.toLocaleString()}</td>
                             <td><strong>${s.factor}</strong></td>
                             <td><span class="badge ${badgeClass}">${s.likelihood.replace('-', ' ')}</span></td>
+                            <td style="font-size: 0.85rem; color: #64748b; max-width: 300px;">${s.reasoning || 'N/A'}</td>
                         </tr>
                     `;
                 });
