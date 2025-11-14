@@ -1,0 +1,42 @@
+{
+  "fox_funding": {
+    "name": "Fox Funding Group",
+    "aliases": ["fox funding", "fox fundin", "fox funding grp", "fox funding grou"],
+    "typical_factor": 1.42,
+    "factor_range": [1.39, 1.46],
+    "typical_terms_weekly": [40, 42, 44, 45],
+    "typical_terms_daily": [],
+    "typical_fee_range": [0, 0.05],
+    "notes": "Good company, moderate risk. Prefers established businesses."
+  },
+  "qfs_capital": {
+    "name": "QFS Capital LLC",
+    "aliases": ["qfs", "qfscapital", "qfs capital"],
+    "typical_factor": 1.45,
+    "factor_range": [1.35, 1.55],
+    "typical_terms_weekly": [20, 22, 24, 26, 28],
+    "typical_terms_daily": [100, 110, 120, 130],
+    "typical_fee_range": [0.03, 0.10],
+    "notes": "Reverse consolidation company. Short terms common."
+  },
+  "sbfs": {
+    "name": "Small Business Financial Solutions",
+    "aliases": ["sbfs", "small business financia", "sbfs llc"],
+    "typical_factor": 1.46,
+    "factor_range": [1.42, 1.50],
+    "typical_terms_weekly": [40, 42, 44, 46],
+    "typical_terms_daily": [],
+    "typical_fee_range": [0.02, 0.05],
+    "notes": "Solid lender with moderate factors."
+  },
+  "kapitus": {
+    "name": "Kapitus",
+    "aliases": ["kapitus", "kapitus servicin"],
+    "typical_factor": 1.32,
+    "factor_range": [1.28, 1.38],
+    "typical_terms_weekly": [60, 65, 70, 75],
+    "typical_terms_daily": [],
+    "typical_fee_range": [0, 0.02],
+    "notes": "Very solid lender with low factors and long terms."
+  }
+}
