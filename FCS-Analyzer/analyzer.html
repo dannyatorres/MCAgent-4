@@ -620,16 +620,40 @@
                 const nps = data.nextPositionScenarios;
                 let scenariosHTML = '';
 
+                // AI Guidance box (NEW)
+                if (nps.guidance) {
+                    scenariosHTML += `<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);">`;
+                    scenariosHTML += `<div style="font-weight: 600; font-size: 0.875rem; color: rgba(255,255,255,0.9); margin-bottom: 16px; letter-spacing: 0.5px; text-transform: uppercase;">AI Pricing Guidance</div>`;
+                    scenariosHTML += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 16px;">`;
+                    scenariosHTML += `<div><div style="font-size: 0.75rem; color: rgba(255,255,255,0.8); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Recommended Addition</div><div style="font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px;">${nps.guidance.recommendedWithholdingAddition}%</div></div>`;
+                    scenariosHTML += `<div><div style="font-size: 0.75rem; color: rgba(255,255,255,0.8); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Payment Structure</div><div style="font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px;">${nps.guidance.paymentFrequency}</div></div>`;
+                    scenariosHTML += `</div>`;
+                    scenariosHTML += `<div style="padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.2); margin-bottom: 12px;">`;
+                    scenariosHTML += `<div style="font-size: 0.875rem; line-height: 1.6; color: rgba(255,255,255,0.95); margin-bottom: 8px;"><strong>Withholding Strategy:</strong> ${nps.guidance.reasoning}</div>`;
+                    scenariosHTML += `<div style="font-size: 0.875rem; line-height: 1.6; color: rgba(255,255,255,0.95);"><strong>Frequency Rationale:</strong> ${nps.guidance.frequencyReasoning}</div>`;
+                    scenariosHTML += `</div>`;
+                    scenariosHTML += `</div>`;
+                }
+
                 // Summary info box
                 scenariosHTML += `<div style="background: #f5f5f7; border-radius: 12px; padding: 20px; margin-bottom: 24px;">`;
                 scenariosHTML += `<div style="font-weight: 600; font-size: 0.875rem; color: #86868b; margin-bottom: 16px; letter-spacing: 0.5px; text-transform: uppercase;">Scenario Parameters</div>`;
                 scenariosHTML += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">`;
-                scenariosHTML += `<div><div style="font-size: 0.75rem; color: #86868b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Last Position</div><div style="font-size: 0.95rem; font-weight: 600; color: #1d1d1f;">${nps.lastPosition.funding.toLocaleString()}, ${nps.lastPosition.term} ${nps.lastPosition.termUnit}</div></div>`;
+
+                if (nps.lastPosition) {
+                    scenariosHTML += `<div><div style="font-size: 0.75rem; color: #86868b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Last Position</div><div style="font-size: 0.95rem; font-weight: 600; color: #1d1d1f;">${nps.lastPosition.funding.toLocaleString()}, ${nps.lastPosition.term} ${nps.lastPosition.termUnit}</div></div>`;
+                } else {
+                    scenariosHTML += `<div><div style="font-size: 0.75rem; color: #86868b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Last Position</div><div style="font-size: 0.95rem; font-weight: 600; color: #f59e0b;">Unable to determine</div></div>`;
+                }
+
                 scenariosHTML += `<div><div style="font-size: 0.75rem; color: #86868b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Current Withholding</div><div style="font-size: 0.95rem; font-weight: 600; color: #1d1d1f;">${nps.currentWithholding.toFixed(1)}%</div></div>`;
-                scenariosHTML += `<div><div style="font-size: 0.75rem; color: #86868b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Target Addition</div><div style="font-size: 0.95rem; font-weight: 600; color: #1d1d1f;">~${nps.targetAddition}% → ${nps.targetTotal.toFixed(1)}%</div></div>`;
-                scenariosHTML += `<div><div style="font-size: 0.75rem; color: #86868b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Payment Capacity</div><div style="font-size: 0.95rem; font-weight: 600; color: #1d1d1f;">${nps.paymentCapacity.toLocaleString()} ${nps.lastPosition.frequency}</div></div>`;
+                scenariosHTML += `<div><div style="font-size: 0.75rem; color: #86868b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Target Addition</div><div style="font-size: 0.95rem; font-weight: 600; color: #1d1d1f;">${nps.targetAddition}% → ${nps.targetTotal.toFixed(1)}%</div></div>`;
+
+                const paymentPeriod = nps.guidance ? nps.guidance.paymentFrequency.replace('ly', '').toLowerCase() : 'period';
+                scenariosHTML += `<div><div style="font-size: 0.75rem; color: #86868b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Payment Capacity</div><div style="font-size: 0.95rem; font-weight: 600; color: #1d1d1f;">${nps.paymentCapacity.toLocaleString()}/${paymentPeriod}</div></div>`;
+
                 scenariosHTML += `</div>`;
-                scenariosHTML += `<div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e5ea; font-size: 0.875rem; color: #86868b;">Scenarios based on adding ~10% withholding (standard lender approach). Terms capped at last position's term.</div>`;
+                scenariosHTML += `<div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e5ea; font-size: 0.875rem; color: #86868b;">Scenarios generated based on AI analysis of file strength, position count, and risk profile.</div>`;
                 scenariosHTML += `</div>`;
 
                 // Helper function to render scenario table
@@ -666,25 +690,23 @@
                 };
 
                 // Render all tiers
-                scenariosHTML += renderScenarioTable(nps.conservative, 'Conservative Scenarios (Short Terms)', 'conservative');
-                scenariosHTML += renderScenarioTable(nps.moderate, 'Moderate Scenarios (Medium Terms)', 'moderate');
-                scenariosHTML += renderScenarioTable(nps.aggressive, 'Aggressive Scenarios (Longer Terms)', 'aggressive');
+                scenariosHTML += renderScenarioTable(nps.conservative, 'Conservative Scenarios', 'conservative');
+                scenariosHTML += renderScenarioTable(nps.moderate, 'Moderate Scenarios', 'moderate');
+                scenariosHTML += renderScenarioTable(nps.aggressive, 'Aggressive Scenarios', 'aggressive');
 
                 // Considerations
                 if (nps.considerations && nps.considerations.length > 0) {
-                    scenariosHTML += '<h3 style="color: #1d1d1f; margin: 32px 0 16px 0; font-size: 1.1rem; font-weight: 600; letter-spacing: -0.2px;">Important Considerations</h3>';
-                    nps.considerations.forEach(consideration => {
-                        scenariosHTML += `<div style="background: #f5f5f7; border-radius: 12px; padding: 16px; margin-bottom: 12px;">`;
-                        scenariosHTML += `<div style="font-weight: 600; color: #1d1d1f; margin-bottom: 8px;">${consideration.category}</div>`;
-                        scenariosHTML += `<ul style="margin: 0 0 0 20px; padding: 0; color: #86868b; line-height: 1.6;">`;
-                        scenariosHTML += consideration.points.map(point => `<li style="margin-bottom: 4px; font-size: 0.875rem;">${point}</li>`).join('');
-                        scenariosHTML += `</ul></div>`;
-                    });
+                    scenariosHTML += '<h3 style="color: #1d1d1f; margin: 32px 0 16px 0; font-size: 1.1rem; font-weight: 600; letter-spacing: -0.2px;">Risk & Strategy Considerations</h3>';
+                    const allPoints = nps.considerations.flatMap(c => c.points);
+                    scenariosHTML += `<div style="background: #f5f5f7; border-radius: 12px; padding: 20px; border-left: 4px solid #f59e0b;">`;
+                    scenariosHTML += `<ul style="margin: 0; padding-left: 20px; color: #1d1d1f; line-height: 1.6;">`;
+                    scenariosHTML += allPoints.map(point => `<li style="margin-bottom: 8px; font-size: 0.875rem;">${point}</li>`).join('');
+                    scenariosHTML += `</ul></div>`;
                 }
 
                 document.getElementById('nextPositionScenarios').innerHTML = scenariosHTML;
             } else {
-                document.getElementById('nextPositionScenarios').innerHTML = '<p style="color: #86868b;">Next position scenarios not available (requires active positions and last position analysis).</p>';
+                document.getElementById('nextPositionScenarios').innerHTML = '<p style="color: #86868b;">Next position scenarios not available (requires active positions).</p>';
             }
 
             resultsDiv.classList.add('active');
