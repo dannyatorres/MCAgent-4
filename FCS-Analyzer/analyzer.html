@@ -309,6 +309,38 @@
             font-size: 0.95rem;
             opacity: 0.9;
         }
+
+        .info-box {
+            background: #f5f5f7;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .info-box p {
+            margin: 8px 0;
+            color: #1d1d1f;
+        }
+
+        details {
+            background: white;
+            border: 1px solid #e5e5ea;
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        details summary {
+            list-style: none;
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        #hopScenariosSection:empty {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -344,6 +376,11 @@
                 <div class="results-section">
                     <h2>🎯 Last Position Analysis</h2>
                     <div id="lastPositionAnalysis"></div>
+                </div>
+
+                <!-- Hop Scenarios -->
+                <div class="results-section" id="hopScenariosSection">
+                    <div id="hopScenarios"></div>
                 </div>
 
                 <!-- Affordable Funding Scenarios -->
@@ -515,52 +552,141 @@
             }
 
             // Last Position Analysis
-            if (data.lastPositionAnalysis && data.lastPositionAnalysis.scenarios) {
-                const lastPos = data.lastPositionAnalysis;
-                let posAnalysisHTML = `
-                    <p><strong>Deposit:</strong> ${lastPos.deposit.amount.toLocaleString()} on ${lastPos.deposit.date} from ${lastPos.deposit.lender}</p>
-                    <p><strong>Payment:</strong> ${lastPos.payment.toLocaleString()} ${lastPos.frequency}</p>
-                    <h3>Possible Term Scenarios:</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Term</th>
-                                <th>Original Funding</th>
-                                <th>Fee</th>
-                                <th>Total Payback</th>
-                                <th>Factor</th>
-                                <th>Likelihood</th>
-                                <th>Reasoning</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
+            let lastPosHTML = '';
+            if (data.lastPositionAnalysis && data.lastPositionAnalysis.scenarios && data.lastPositionAnalysis.scenarios.length > 0) {
+                const lpa = data.lastPositionAnalysis;
 
-                lastPos.scenarios.forEach(s => {
-                    const badgeClass = s.likelihood === 'most-likely' ? 'badge-success' :
-                                     s.likelihood === 'very-likely' ? 'badge-info' :
-                                     s.likelihood === 'likely' ? 'badge-info' :
-                                     s.likelihood === 'possible' ? 'badge-warning' :
-                                     'badge-danger';
-                    const rowClass = s.likelihood === 'most-likely' ? 'highlight-row' : '';
+                // Check if payment is unknown
+                if (lpa.paymentUnknown) {
+                    lastPosHTML = '<h3>🎯 Last Position Analysis</h3>';
+                    lastPosHTML += `<div class="info-box" style="background: #fef3c7; border-left: 4px solid #f59e0b;">`;
+                    lastPosHTML += `<p><strong>⚠️ Recent MCA Detected</strong></p>`;
+                    lastPosHTML += `<p>${lpa.reason}</p>`;
+                    if (lpa.deposit) {
+                        lastPosHTML += `<p><strong>Deposit:</strong> ${lpa.deposit.amount.toLocaleString()} on ${lpa.deposit.date}`;
+                        if (lpa.deposit.lender) lastPosHTML += ` from ${lpa.deposit.lender}`;
+                        lastPosHTML += `</p>`;
+                    }
+                    lastPosHTML += `<p style="margin-top: 10px; font-size: 0.9rem; color: #92400e;">Cannot calculate term scenarios without visible recurring payment. Check back after first payment is pulled.</p>`;
+                    lastPosHTML += `</div>`;
+                } else {
+                    // Normal display with scenarios
+                    lastPosHTML = '<h3>🎯 Last Position Analysis</h3>';
 
-                    posAnalysisHTML += `
-                        <tr class="${rowClass}">
-                            <td>${s.term} ${s.termUnit}</td>
-                            <td>${s.originalFunding.toLocaleString()}</td>
-                            <td>${s.fee.toLocaleString()} (${s.feePercent}%)</td>
-                            <td>${s.totalPayback.toLocaleString()}</td>
-                            <td><strong>${s.factor}</strong></td>
-                            <td><span class="badge ${badgeClass}">${s.likelihood.replace('-', ' ')}</span></td>
-                            <td style="font-size: 0.85rem; color: #64748b; max-width: 300px;">${s.reasoning || 'N/A'}</td>
-                        </tr>
-                    `;
+                    // Deposit and Payment Info
+                    lastPosHTML += `<div class="info-box" style="margin-bottom: 15px;">`;
+                    if (lpa.deposit) {
+                        lastPosHTML += `<p><strong>Deposit:</strong> ${lpa.deposit.amount.toLocaleString()} on ${lpa.deposit.date}`;
+                        if (lpa.deposit.lender) lastPosHTML += ` from ${lpa.deposit.lender}`;
+                        lastPosHTML += `</p>`;
+                    }
+                    if (lpa.payment) {
+                        lastPosHTML += `<p><strong>Payment:</strong> ${lpa.payment.toLocaleString()} ${lpa.frequency}</p>`;
+                    }
+                    lastPosHTML += `</div>`;
+
+                    // Most Likely Scenario (highlighted)
+                    const mostLikely = lpa.scenarios[0];
+                    lastPosHTML += `<div class="most-likely-scenario" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">`;
+                    lastPosHTML += `<h4 style="margin: 0 0 15px 0; color: white;">💎 Most Likely Original Deal</h4>`;
+                    lastPosHTML += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">`;
+                    lastPosHTML += `<div><div style="font-size: 0.85rem; opacity: 0.9;">💰 Funding</div><div style="font-size: 1.3rem; font-weight: 600;">${mostLikely.originalFunding.toLocaleString()}</div></div>`;
+                    lastPosHTML += `<div><div style="font-size: 0.85rem; opacity: 0.9;">📅 Term</div><div style="font-size: 1.3rem; font-weight: 600;">${mostLikely.term} ${mostLikely.termUnit}</div></div>`;
+                    lastPosHTML += `<div><div style="font-size: 0.85rem; opacity: 0.9;">📊 Factor</div><div style="font-size: 1.3rem; font-weight: 600;">${mostLikely.factor}</div></div>`;
+                    lastPosHTML += `<div><div style="font-size: 0.85rem; opacity: 0.9;">💵 Fee</div><div style="font-size: 1.3rem; font-weight: 600;">${mostLikely.fee.toLocaleString()} (${mostLikely.feePercent})</div></div>`;
+                    lastPosHTML += `</div>`;
+                    lastPosHTML += `<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.3); font-size: 0.9rem;">`;
+                    lastPosHTML += `<strong>✅ Why:</strong> ${mostLikely.reasoning}`;
+                    lastPosHTML += `</div>`;
+                    lastPosHTML += `</div>`;
+
+                    // Other scenarios (collapsible)
+                    if (lpa.scenarios.length > 1) {
+                        lastPosHTML += `<details style="margin-bottom: 20px;">`;
+                        lastPosHTML += `<summary style="cursor: pointer; font-weight: 600; padding: 10px; background: #f1f5f9; border-radius: 4px; user-select: none;">📋 Other Possible Scenarios (${lpa.scenarios.length - 1} alternatives) ▼</summary>`;
+                        lastPosHTML += `<table style="margin-top: 15px;"><thead><tr>`;
+                        lastPosHTML += `<th>Term</th><th>Original Funding</th><th>Fee</th><th>Total Payback</th><th>Factor</th><th>Likelihood</th><th>Reasoning</th>`;
+                        lastPosHTML += `</tr></thead><tbody>`;
+
+                        // Show scenarios 2 onwards
+                        for (let i = 1; i < lpa.scenarios.length; i++) {
+                            const scenario = lpa.scenarios[i];
+                            const likelihoodColors = {
+                                'most-likely': '#10b981',
+                                'very-likely': '#3b82f6',
+                                'likely': '#8b5cf6',
+                                'possible': '#f59e0b',
+                                'unlikely': '#ef4444'
+                            };
+                            const color = likelihoodColors[scenario.likelihood] || '#6b7280';
+
+                            lastPosHTML += `<tr>`;
+                            lastPosHTML += `<td>${scenario.term} ${scenario.termUnit}</td>`;
+                            lastPosHTML += `<td><strong>${scenario.originalFunding.toLocaleString()}</strong></td>`;
+                            lastPosHTML += `<td>${scenario.fee.toLocaleString()} (${scenario.feePercent})</td>`;
+                            lastPosHTML += `<td>${scenario.totalPayback.toLocaleString()}</td>`;
+                            lastPosHTML += `<td>${scenario.factor}</td>`;
+                            lastPosHTML += `<td><span style="background: ${color}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; white-space: nowrap;">${scenario.likelihood}</span></td>`;
+                            lastPosHTML += `<td style="font-size: 0.9rem;">${scenario.reasoning}</td>`;
+                            lastPosHTML += `</tr>`;
+                        }
+
+                        lastPosHTML += `</tbody></table></details>`;
+                    }
+                }
+
+                document.getElementById('lastPositionAnalysis').innerHTML = lastPosHTML;
+            } else {
+                document.getElementById('lastPositionAnalysis').innerHTML = '<p>No last position data available or unable to analyze.</p>';
+            }
+
+            // Hop Scenarios (NEW SECTION)
+            if (data.hopScenarios) {
+                const hs = data.hopScenarios;
+                let hopHTML = '<h3>📊 Hop-Based Funding Scenarios</h3>';
+
+                hopHTML += `<div class="info-box" style="margin-bottom: 15px; background: #f0f9ff; border-left: 4px solid #3b82f6;">`;
+                hopHTML += `<p><strong>Based on Last Position:</strong> ${hs.lastPosition.funding.toLocaleString()}, ${hs.lastPosition.term} ${hs.lastPosition.termUnit}, ${hs.lastPosition.factor} factor, ${hs.lastPosition.feePercent} fee</p>`;
+                hopHTML += `<p style="font-size: 0.9rem; color: #1e40af; margin-top: 8px;">The "hop" rule: Next position is typically 50-70% of last position's amount and term. Stronger files can push toward 70%.</p>`;
+                hopHTML += `</div>`;
+
+                hopHTML += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">`;
+
+                hs.scenarios.forEach(scenario => {
+                    const borderColors = {
+                        50: '#10b981',
+                        60: '#f59e0b',
+                        70: '#ef4444'
+                    };
+                    const bgColors = {
+                        50: '#ecfdf5',
+                        60: '#fffbeb',
+                        70: '#fef2f2'
+                    };
+
+                    hopHTML += `<div style="border: 2px solid ${borderColors[scenario.hopPercent]}; background: ${bgColors[scenario.hopPercent]}; padding: 15px; border-radius: 8px;">`;
+                    hopHTML += `<h4 style="margin: 0 0 10px 0; color: ${borderColors[scenario.hopPercent]};">${scenario.label}</h4>`;
+                    hopHTML += `<p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">${scenario.description}</p>`;
+
+                    hopHTML += `<div style="margin-bottom: 8px;"><strong>💰 Funding:</strong> ${scenario.funding.toLocaleString()}</div>`;
+                    hopHTML += `<div style="margin-bottom: 8px;"><strong>📅 Term:</strong> ${scenario.term} ${scenario.termUnit}</div>`;
+                    hopHTML += `<div style="margin-bottom: 8px;"><strong>💳 Payment:</strong> ${scenario.payment.toLocaleString()} ${scenario.frequency}</div>`;
+                    hopHTML += `<div style="margin-bottom: 8px;"><strong>📊 Factor:</strong> ${scenario.factor}</div>`;
+                    hopHTML += `<div style="margin-bottom: 8px;"><strong>💵 Total Payback:</strong> ${scenario.totalPayback.toLocaleString()}</div>`;
+
+                    hopHTML += `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">`;
+                    hopHTML += `<div style="font-size: 0.9rem;"><strong>Withholding Impact:</strong></div>`;
+                    hopHTML += `<div style="font-size: 0.85rem; color: #64748b;">Adds ${scenario.additionalWithholding}% → Total ${scenario.newTotalWithholding}%</div>`;
+                    hopHTML += `</div>`;
+
+                    hopHTML += `</div>`;
                 });
 
-                posAnalysisHTML += '</tbody></table>';
-                document.getElementById('lastPositionAnalysis').innerHTML = posAnalysisHTML;
+                hopHTML += `</div>`;
+
+                document.getElementById('hopScenarios').innerHTML = hopHTML;
             } else {
-                document.getElementById('lastPositionAnalysis').innerHTML = '<p>No last MCA deposit information found.</p>';
+                document.getElementById('hopScenarios').innerHTML = '';
             }
 
             // Affordable Funding Scenarios
