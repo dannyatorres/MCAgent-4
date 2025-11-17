@@ -322,25 +322,6 @@
             color: #1d1d1f;
         }
 
-        details {
-            background: white;
-            border: 1px solid #e5e5ea;
-            border-radius: 12px;
-            padding: 0;
-            overflow: hidden;
-        }
-
-        details summary {
-            list-style: none;
-        }
-
-        details summary::-webkit-details-marker {
-            display: none;
-        }
-
-        #hopScenariosSection:empty {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -375,18 +356,12 @@
                 <!-- Last Position Analysis -->
                 <div class="results-section">
                     <h2>🎯 Last Position Analysis</h2>
-                    <div id="lastPositionAnalysis"></div>
+                    <div id="lastPosition"></div>
                 </div>
 
-                <!-- Hop Scenarios -->
-                <div class="results-section" id="hopScenariosSection">
-                    <div id="hopScenarios"></div>
-                </div>
-
-                <!-- Affordable Funding Scenarios -->
+                <!-- Next Position Scenarios -->
                 <div class="results-section">
-                    <h2>💵 Affordable Funding Scenarios</h2>
-                    <div id="affordableAnalysis"></div>
+                    <div id="nextPositionScenarios"></div>
                 </div>
             </div>
         </div>
@@ -600,11 +575,10 @@
                     lastPosHTML += `</div>`;
                     lastPosHTML += `</div>`;
 
-                    // Other scenarios (collapsible)
+                    // Other scenarios (always visible, not collapsible)
                     if (lpa.scenarios.length > 1) {
-                        lastPosHTML += `<details style="margin-bottom: 20px;">`;
-                        lastPosHTML += `<summary style="cursor: pointer; font-weight: 600; padding: 10px; background: #f1f5f9; border-radius: 4px; user-select: none;">📋 Other Possible Scenarios (${lpa.scenarios.length - 1} alternatives) ▼</summary>`;
-                        lastPosHTML += `<table style="margin-top: 15px;"><thead><tr>`;
+                        lastPosHTML += `<h4 style="margin: 20px 0 10px 0;">📋 Other Possible Scenarios</h4>`;
+                        lastPosHTML += `<table><thead><tr>`;
                         lastPosHTML += `<th>Term</th><th>Original Funding</th><th>Fee</th><th>Total Payback</th><th>Factor</th><th>Likelihood</th><th>Reasoning</th>`;
                         lastPosHTML += `</tr></thead><tbody>`;
 
@@ -631,154 +605,76 @@
                             lastPosHTML += `</tr>`;
                         }
 
-                        lastPosHTML += `</tbody></table></details>`;
+                        lastPosHTML += `</tbody></table>`;
                     }
                 }
 
-                document.getElementById('lastPositionAnalysis').innerHTML = lastPosHTML;
+                document.getElementById('lastPosition').innerHTML = lastPosHTML;
             } else {
-                document.getElementById('lastPositionAnalysis').innerHTML = '<p>No last position data available or unable to analyze.</p>';
+                document.getElementById('lastPosition').innerHTML = '<p>No last position data available or unable to analyze.</p>';
             }
 
-            // Hop Scenarios (NEW SECTION)
-            if (data.hopScenarios) {
-                const hs = data.hopScenarios;
-                let hopHTML = '<h3>📊 Hop-Based Funding Scenarios</h3>';
+            // Next Position Scenarios (NEW - replaces both hop and affordable funding)
+            if (data.nextPositionScenarios) {
+                const nps = data.nextPositionScenarios;
+                let scenariosHTML = '<h3>💰 Next Position Scenarios</h3>';
 
-                hopHTML += `<div class="info-box" style="margin-bottom: 15px; background: #f0f9ff; border-left: 4px solid #3b82f6;">`;
-                hopHTML += `<p><strong>Based on Last Position:</strong> ${hs.lastPosition.funding.toLocaleString()}, ${hs.lastPosition.term} ${hs.lastPosition.termUnit}, ${hs.lastPosition.factor} factor, ${hs.lastPosition.feePercent} fee</p>`;
-                hopHTML += `<p style="font-size: 0.9rem; color: #1e40af; margin-top: 8px;">The "hop" rule: Next position is typically 50-70% of last position's amount and term. Stronger files can push toward 70%.</p>`;
-                hopHTML += `</div>`;
-
-                hopHTML += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">`;
-
-                hs.scenarios.forEach(scenario => {
-                    const borderColors = {
-                        50: '#10b981',
-                        60: '#f59e0b',
-                        70: '#ef4444'
-                    };
-                    const bgColors = {
-                        50: '#ecfdf5',
-                        60: '#fffbeb',
-                        70: '#fef2f2'
-                    };
-
-                    hopHTML += `<div style="border: 2px solid ${borderColors[scenario.hopPercent]}; background: ${bgColors[scenario.hopPercent]}; padding: 15px; border-radius: 8px;">`;
-                    hopHTML += `<h4 style="margin: 0 0 10px 0; color: ${borderColors[scenario.hopPercent]};">${scenario.label}</h4>`;
-                    hopHTML += `<p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">${scenario.description}</p>`;
-
-                    hopHTML += `<div style="margin-bottom: 8px;"><strong>💰 Funding:</strong> ${scenario.funding.toLocaleString()}</div>`;
-                    hopHTML += `<div style="margin-bottom: 8px;"><strong>📅 Term:</strong> ${scenario.term} ${scenario.termUnit}</div>`;
-                    hopHTML += `<div style="margin-bottom: 8px;"><strong>💳 Payment:</strong> ${scenario.payment.toLocaleString()} ${scenario.frequency}</div>`;
-                    hopHTML += `<div style="margin-bottom: 8px;"><strong>📊 Factor:</strong> ${scenario.factor}</div>`;
-                    hopHTML += `<div style="margin-bottom: 8px;"><strong>💵 Total Payback:</strong> ${scenario.totalPayback.toLocaleString()}</div>`;
-
-                    hopHTML += `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">`;
-                    hopHTML += `<div style="font-size: 0.9rem;"><strong>Withholding Impact:</strong></div>`;
-                    hopHTML += `<div style="font-size: 0.85rem; color: #64748b;">Adds ${scenario.additionalWithholding}% → Total ${scenario.newTotalWithholding}%</div>`;
-                    hopHTML += `</div>`;
-
-                    hopHTML += `</div>`;
-                });
-
-                hopHTML += `</div>`;
-
-                document.getElementById('hopScenarios').innerHTML = hopHTML;
-            } else {
-                document.getElementById('hopScenarios').innerHTML = '';
-            }
-
-            // Affordable Funding Scenarios
-            if (data.affordableFundingScenarios) {
-                const afs = data.affordableFundingScenarios;
-                let afsHTML = '';
-
-                // Most Likely Range
-                if (afs.mostLikelyRange) {
-                    const mlr = afs.mostLikelyRange;
-                    afsHTML += `
-                        <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 24px; border-radius: 12px; margin-bottom: 20px;">
-                            <h4 style="margin-bottom: 10px; color: white; font-size: 1rem;">🎯 Most Likely Fundable Range</h4>
-                            <div style="font-size: 1.8rem; font-weight: 700; margin-bottom: 8px;">
-                                $${mlr.minFunding.toLocaleString()} - $${mlr.maxFunding.toLocaleString()}
-                            </div>
-                            <div style="font-size: 0.9rem; opacity: 0.95;">
-                                <strong>Typical Terms:</strong> ${mlr.typicalTermRange}<br>
-                                <strong>Typical Factors:</strong> ${mlr.typicalFactorRange}<br>
-                                <strong>Why:</strong> ${mlr.reasoning}
-                            </div>
-                        </div>
-                    `;
-                }
+                // Summary info box
+                scenariosHTML += `<div class="info-box" style="background: #f0f9ff; border-left: 4px solid #3b82f6; margin-bottom: 20px;">`;
+                scenariosHTML += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">`;
+                scenariosHTML += `<div><strong>Last Position:</strong> ${nps.lastPosition.funding.toLocaleString()}, ${nps.lastPosition.term} ${nps.lastPosition.termUnit}</div>`;
+                scenariosHTML += `<div><strong>Current Withholding:</strong> ${nps.currentWithholding.toFixed(1)}%</div>`;
+                scenariosHTML += `<div><strong>Target Addition:</strong> ~${nps.targetAddition}% (reaching ${nps.targetTotal.toFixed(1)}%)</div>`;
+                scenariosHTML += `<div><strong>Payment Capacity:</strong> ${nps.paymentCapacity.toLocaleString()} ${nps.lastPosition.frequency}</div>`;
+                scenariosHTML += `</div>`;
+                scenariosHTML += `<p style="font-size: 0.9rem; color: #1e40af; margin: 0;">Scenarios based on adding ~10% withholding (standard lender approach). Terms capped at last position's term.</p>`;
+                scenariosHTML += `</div>`;
 
                 // Helper function to render scenario table
-                const renderScenarioTable = (scenarios, title, color) => {
+                const renderScenarioTable = (scenarios, title, emoji) => {
                     if (!scenarios || scenarios.length === 0) return '';
 
-                    let html = `
-                        <h3 style="margin-top: 20px; margin-bottom: 10px; font-size: 1.1rem;">${color} ${title}</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Scenario</th>
-                                    <th>Funding</th>
-                                    <th>Term</th>
-                                    <th>Payment</th>
-                                    <th>Factor</th>
-                                    <th>Total Payback</th>
-                                    <th>Withholding</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
+                    let html = `<h4 style="margin: 20px 0 10px 0;">${emoji} ${title}</h4>`;
+                    html += `<table><thead><tr>`;
+                    html += `<th>Funding</th><th>Term</th><th>Payment</th><th>Factor</th><th>Total Payback</th><th>Withholding Impact</th><th>Reasoning</th>`;
+                    html += `</tr></thead><tbody>`;
 
                     scenarios.forEach(s => {
-                        html += `
-                            <tr>
-                                <td>${s.name}</td>
-                                <td><strong>$${s.funding.toLocaleString()}</strong></td>
-                                <td>${s.term} ${s.termUnit}</td>
-                                <td>$${s.payment.toLocaleString()} ${s.paymentFrequency}</td>
-                                <td>${s.factor}</td>
-                                <td>$${s.totalPayback.toLocaleString()}</td>
-                                <td style="font-size: 0.85rem;">${s.targetWithholding}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="7" style="font-size: 0.85rem; color: #64748b; padding: 8px 12px; background: #f9fafb; border-bottom: 2px solid #e5e5ea;">
-                                    <em>${s.reasoning}</em>
-                                </td>
-                            </tr>
-                        `;
+                        html += `<tr>`;
+                        html += `<td><strong>${s.funding.toLocaleString()}</strong></td>`;
+                        html += `<td>${s.term} ${s.termUnit}</td>`;
+                        html += `<td>${s.payment.toLocaleString()} ${s.frequency}</td>`;
+                        html += `<td>${s.factor}</td>`;
+                        html += `<td>${s.totalPayback.toLocaleString()}</td>`;
+                        html += `<td>+${s.withholdAddition}% (total ${s.newTotalWithhold}%)</td>`;
+                        html += `<td style="font-size: 0.9rem;">${s.reasoning}</td>`;
+                        html += `</tr>`;
                     });
 
-                    html += '</tbody></table>';
+                    html += `</tbody></table>`;
                     return html;
                 };
 
                 // Render all tiers
-                afsHTML += renderScenarioTable(afs.conservative, 'Conservative Scenarios', '🟢');
-                afsHTML += renderScenarioTable(afs.moderate, 'Moderate Scenarios', '🟡');
-                afsHTML += renderScenarioTable(afs.aggressive, 'Aggressive Scenarios', '🔴');
+                scenariosHTML += renderScenarioTable(nps.conservative, 'Conservative Scenarios (Short Terms)', '🟢');
+                scenariosHTML += renderScenarioTable(nps.moderate, 'Moderate Scenarios (Medium Terms)', '🟡');
+                scenariosHTML += renderScenarioTable(nps.aggressive, 'Aggressive Scenarios (Longer Terms)', '🔴');
 
                 // Considerations
-                if (afs.considerations && afs.considerations.length > 0) {
-                    afsHTML += '<h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 1.1rem;">⚠️ Important Considerations</h3>';
-                    afs.considerations.forEach(consideration => {
-                        afsHTML += `
-                            <div style="background: #f5f5f7; padding: 16px; border-left: 4px solid #f59e0b; margin-bottom: 12px; border-radius: 8px;">
-                                <strong style="color: #1d1d1f;">${consideration.category}:</strong>
-                                <ul style="margin: 8px 0 0 20px; color: #1d1d1f;">
-                                    ${consideration.points.map(point => `<li>${point}</li>`).join('')}
-                                </ul>
-                            </div>
-                        `;
+                if (nps.considerations && nps.considerations.length > 0) {
+                    scenariosHTML += '<h4 style="margin-top: 30px; margin-bottom: 10px;">⚠️ Important Considerations</h4>';
+                    nps.considerations.forEach(consideration => {
+                        scenariosHTML += `<div style="background: #f1f5f9; padding: 12px; border-left: 4px solid #f59e0b; margin-bottom: 12px;">`;
+                        scenariosHTML += `<strong>${consideration.category}:</strong>`;
+                        scenariosHTML += `<ul style="margin: 8px 0 0 20px;">`;
+                        scenariosHTML += consideration.points.map(point => `<li>${point}</li>`).join('');
+                        scenariosHTML += `</ul></div>`;
                     });
                 }
 
-                document.getElementById('affordableAnalysis').innerHTML = afsHTML;
+                document.getElementById('nextPositionScenarios').innerHTML = scenariosHTML;
             } else {
-                document.getElementById('affordableAnalysis').innerHTML = '<p>Affordable funding calculation unavailable.</p>';
+                document.getElementById('nextPositionScenarios').innerHTML = '<p>Next position scenarios not available (requires active positions and last position analysis).</p>';
             }
 
             resultsDiv.classList.add('active');
