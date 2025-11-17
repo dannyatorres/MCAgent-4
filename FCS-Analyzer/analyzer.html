@@ -667,8 +667,14 @@
                     };
                     const colors = colorMap[color] || colorMap['moderate'];
 
-                    let html = `<div style="background: ${colors.bg}; border: 1px solid ${colors.border}; border-radius: 12px; padding: 20px; margin-bottom: 20px;">`;
-                    html += `<h3 style="color: ${colors.text}; margin-bottom: 16px; font-size: 1rem; font-weight: 600; letter-spacing: -0.2px;">${title}</h3>`;
+                    let html = '';
+
+                    // Only wrap in colored box if title is provided
+                    if (title && color) {
+                        html += `<div style="background: ${colors.bg}; border: 1px solid ${colors.border}; border-radius: 12px; padding: 20px; margin-bottom: 20px;">`;
+                        html += `<h3 style="color: ${colors.text}; margin-bottom: 16px; font-size: 1rem; font-weight: 600; letter-spacing: -0.2px;">${title}</h3>`;
+                    }
+
                     html += `<table><thead><tr>`;
                     html += `<th>Funding</th><th>Term</th><th>Payment</th><th>Factor</th><th>Payback</th><th>Withholding</th><th>Reasoning</th>`;
                     html += `</tr></thead><tbody>`;
@@ -680,12 +686,17 @@
                         html += `<td>${s.payment.toLocaleString()}<br><span style="font-size: 0.75rem; color: #86868b;">${s.frequency}</span></td>`;
                         html += `<td style="font-weight: 500;">${s.factor}</td>`;
                         html += `<td>${s.totalPayback.toLocaleString()}</td>`;
-                        html += `<td><span style="font-size: 0.875rem; font-weight: 500; color: ${colors.text};">+${s.withholdAddition}%</span><br><span style="font-size: 0.75rem; color: #86868b;">total ${s.newTotalWithhold}%</span></td>`;
+                        html += `<td><span style="font-size: 0.875rem; font-weight: 500; color: ${color ? colors.text : '#1d1d1f'};">+${s.withholdAddition}%</span><br><span style="font-size: 0.75rem; color: #86868b;">total ${s.newTotalWithhold}%</span></td>`;
                         html += `<td style="font-size: 0.875rem; color: #86868b;">${s.reasoning}</td>`;
                         html += `</tr>`;
                     });
 
-                    html += `</tbody></table></div>`;
+                    html += `</tbody></table>`;
+
+                    if (title && color) {
+                        html += `</div>`;
+                    }
+
                     return html;
                 };
 
@@ -694,36 +705,18 @@
                 scenariosHTML += renderScenarioTable(nps.moderate, 'Moderate Scenarios', 'moderate');
                 scenariosHTML += renderScenarioTable(nps.aggressive, 'Aggressive Scenarios', 'aggressive');
 
-                // Best Case Scenarios (if available)
-                if (nps.bestCase && nps.bestCase.length > 0) {
-                    scenariosHTML += `<div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 16px 20px; border-radius: 12px; margin-top: 24px; margin-bottom: 20px;">`;
-                    scenariosHTML += `<h3 style="color: white; margin: 0 0 8px 0; font-size: 1rem; font-weight: 600; letter-spacing: -0.2px;">Best Case Scenarios (10% Withholding Addition)</h3>`;
+                // Best Case Scenarios (if LLM provided bestCaseGuidance)
+                if (nps.bestCase && nps.bestCase.length > 0 && nps.bestCaseGuidance) {
+                    scenariosHTML += `<div style="margin-top: 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 16px 20px; border-radius: 12px; color: white; margin-bottom: 20px;">`;
+                    scenariosHTML += `<h3 style="margin: 0 0 10px 0; color: white; font-size: 1rem; font-weight: 600; letter-spacing: -0.2px;">Best Case Scenarios (${nps.bestCaseGuidance.withholdingAddition}% Withholding Addition)</h3>`;
                     scenariosHTML += `<div style="font-size: 0.875rem; line-height: 1.6; color: rgba(255,255,255,0.95);">`;
-                    scenariosHTML += `<strong>Note:</strong> AI recommended ${nps.guidance ? nps.guidance.recommendedWithholdingAddition : 'lower'}% addition based on risk factors. These scenarios show what's possible if an aggressive lender allows full 10% withholding addition.`;
+                    scenariosHTML += `<strong>AI recommended ${nps.guidance.recommendedWithholdingAddition}%.</strong> ${nps.bestCaseGuidance.reasoning}`;
                     scenariosHTML += `</div></div>`;
 
-                    // Render best case table with special styling
-                    if (nps.bestCase && nps.bestCase.length > 0) {
-                        let html = `<div style="background: #fffbeb; border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; margin-bottom: 20px;">`;
-                        html += `<table><thead><tr>`;
-                        html += `<th>Funding</th><th>Term</th><th>Payment</th><th>Factor</th><th>Payback</th><th>Withholding</th><th>Reasoning</th>`;
-                        html += `</tr></thead><tbody>`;
-
-                        nps.bestCase.forEach(s => {
-                            html += `<tr>`;
-                            html += `<td><strong style="color: #1d1d1f;">${s.funding.toLocaleString()}</strong></td>`;
-                            html += `<td style="font-weight: 500;">${s.term} ${s.termUnit}</td>`;
-                            html += `<td>${s.payment.toLocaleString()}<br><span style="font-size: 0.75rem; color: #86868b;">${s.frequency}</span></td>`;
-                            html += `<td style="font-weight: 500;">${s.factor}</td>`;
-                            html += `<td>${s.totalPayback.toLocaleString()}</td>`;
-                            html += `<td><span style="font-size: 0.875rem; font-weight: 500; color: #92400e;">+${s.withholdAddition}%</span><br><span style="font-size: 0.75rem; color: #86868b;">total ${s.newTotalWithhold}%</span></td>`;
-                            html += `<td style="font-size: 0.875rem; color: #86868b;">${s.reasoning}</td>`;
-                            html += `</tr>`;
-                        });
-
-                        html += `</tbody></table></div>`;
-                        scenariosHTML += html;
-                    }
+                    // Render best case table wrapped in amber box
+                    scenariosHTML += `<div style="background: #fffbeb; border: 1px solid #f59e0b; border-radius: 12px; padding: 20px; margin-bottom: 20px;">`;
+                    scenariosHTML += renderScenarioTable(nps.bestCase, '', '');
+                    scenariosHTML += `</div>`;
                 }
 
                 // Considerations
