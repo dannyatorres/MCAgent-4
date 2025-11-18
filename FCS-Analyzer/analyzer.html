@@ -624,26 +624,36 @@
                 const renderFirstPositionView = (nps) => {
                     let html = '';
 
-                    // Determine lead offer (pick best scenario from aggressive tier)
+                    // Safely determine lead offer
                     const leadOffer = nps.aggressive && nps.aggressive.length > 0
                         ? nps.aggressive[0]
-                        : (nps.moderate && nps.moderate.length > 0 ? nps.moderate[0] : nps.conservative[0]);
+                        : (nps.moderate && nps.moderate.length > 0
+                            ? nps.moderate[0]
+                            : (nps.conservative && nps.conservative.length > 0
+                                ? nps.conservative[0]
+                                : null));
 
-                    if (!leadOffer) return '<p>Unable to generate first position quote.</p>';
+                    if (!leadOffer) {
+                        return '<div style="background: #fee; border: 1px solid #fcc; padding: 20px; border-radius: 8px;"><p><strong>⚠️ Unable to generate first position quote.</strong></p><p>No scenarios were generated. This may indicate insufficient data or the file may not be fundable.</p></div>';
+                    }
+
+                    // Safe helper function
+                    const safe = (value, defaultValue = 0) => value != null ? value : defaultValue;
+                    const safeLocale = (value, defaultValue = 0) => (value != null ? value : defaultValue).toLocaleString();
 
                     // Opening Offer Box
                     html += `<div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 25px; border-radius: 8px; margin-bottom: 20px;">`;
                     html += `<h4 style="margin: 0 0 20px 0; color: white; font-size: 1.3rem;">💰 Opening Offer</h4>`;
                     html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; margin-bottom: 20px;">`;
-                    html += `<div><div style="font-size: 0.9rem; opacity: 0.9;">Amount</div><div style="font-size: 2rem; font-weight: 700;">${leadOffer.funding.toLocaleString()}</div></div>`;
-                    html += `<div><div style="font-size: 0.9rem; opacity: 0.9;">Term</div><div style="font-size: 2rem; font-weight: 700;">${leadOffer.term} ${leadOffer.termUnit}</div></div>`;
-                    html += `<div><div style="font-size: 0.9rem; opacity: 0.9;">Payment</div><div style="font-size: 2rem; font-weight: 700;">${leadOffer.payment.toLocaleString()}/${leadOffer.frequency.replace('ly', '')}</div></div>`;
+                    html += `<div><div style="font-size: 0.9rem; opacity: 0.9;">Amount</div><div style="font-size: 2rem; font-weight: 700;">${safeLocale(leadOffer.funding)}</div></div>`;
+                    html += `<div><div style="font-size: 0.9rem; opacity: 0.9;">Term</div><div style="font-size: 2rem; font-weight: 700;">${safe(leadOffer.term, 'N/A')} ${safe(leadOffer.termUnit, '')}</div></div>`;
+                    html += `<div><div style="font-size: 0.9rem; opacity: 0.9;">Payment</div><div style="font-size: 2rem; font-weight: 700;">${safeLocale(leadOffer.payment)}/${safe(leadOffer.frequency, 'weekly').replace('ly', '')}</div></div>`;
                     html += `</div>`;
                     html += `<div style="background: rgba(255,255,255,0.15); padding: 15px; border-radius: 4px;">`;
                     html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">`;
-                    html += `<div><strong>Factor:</strong> ${leadOffer.factor}</div>`;
-                    html += `<div><strong>Total Payback:</strong> ${leadOffer.totalPayback.toLocaleString()}</div>`;
-                    html += `<div><strong>Withholding:</strong> ~${leadOffer.withholdAddition}%</div>`;
+                    html += `<div><strong>Factor:</strong> ${safe(leadOffer.factor, 'N/A')}</div>`;
+                    html += `<div><strong>Total Payback:</strong> ${safeLocale(leadOffer.totalPayback)}</div>`;
+                    html += `<div><strong>Withholding:</strong> ~${safe(leadOffer.withholdAddition, 0)}%</div>`;
                     html += `</div></div>`;
                     html += `<p style="margin: 15px 0 0 0; font-size: 0.95rem; opacity: 0.95;">This is your competitive starting point. Pricing assumes good credit.</p>`;
                     html += `</div>`;
@@ -651,7 +661,7 @@
                     // Conversation Script
                     html += `<div style="background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 20px; margin-bottom: 20px;">`;
                     html += `<h4 style="margin: 0 0 15px 0; color: #1e40af;">🗣️ Ask the Merchant</h4>`;
-                    html += `<p style="margin: 0 0 10px 0; font-size: 1.05rem; line-height: 1.6;">"Based on your revenue, I can get you <strong>${leadOffer.funding.toLocaleString()} at ${leadOffer.term} ${leadOffer.termUnit}</strong> - that's about <strong>${leadOffer.payment.toLocaleString()} ${leadOffer.frequency}</strong>. How does that sound?</p>`;
+                    html += `<p style="margin: 0 0 10px 0; font-size: 1.05rem; line-height: 1.6;">"Based on your revenue, I can get you <strong>${safeLocale(leadOffer.funding)} at ${safe(leadOffer.term, 'N/A')} ${safe(leadOffer.termUnit, 'weeks')}</strong> - that's about <strong>${safeLocale(leadOffer.payment)} ${safe(leadOffer.frequency, 'weekly')}</strong>. How does that sound?</p>`;
                     html += `<p style="margin: 0; font-size: 1.05rem; line-height: 1.6;">And how's your <strong>credit</strong> looking?"</p>`;
                     html += `</div>`;
 
@@ -659,26 +669,30 @@
                     html += `<div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin-bottom: 20px;">`;
                     html += `<h4 style="margin: 0 0 15px 0; color: #92400e;">📊 If Credit is Lower</h4>`;
 
-                    // Get fallback scenarios
                     const fallbacks = [];
                     if (nps.moderate && nps.moderate.length > 0) fallbacks.push({ label: 'Good Credit (640-679)', scenario: nps.moderate[0] });
                     if (nps.conservative && nps.conservative.length > 0) fallbacks.push({ label: 'Fair Credit (580-639)', scenario: nps.conservative[0] });
                     if (nps.conservative && nps.conservative.length > 1) fallbacks.push({ label: 'Poor Credit (<580)', scenario: nps.conservative[1] });
 
-                    fallbacks.forEach(fb => {
-                        html += `<div style="margin-bottom: 12px; padding: 12px; background: white; border-radius: 4px;">`;
-                        html += `<div style="font-weight: 600; margin-bottom: 5px;">${fb.label}:</div>`;
-                        html += `<div>${fb.scenario.funding.toLocaleString()} at ${fb.scenario.term} ${fb.scenario.termUnit} = ${fb.scenario.payment.toLocaleString()}/${fb.scenario.frequency.replace('ly', '')} (Factor ${fb.scenario.factor})</div>`;
-                        html += `</div>`;
-                    });
+                    if (fallbacks.length > 0) {
+                        fallbacks.forEach(fb => {
+                            if (fb && fb.scenario) {
+                                html += `<div style="margin-bottom: 12px; padding: 12px; background: white; border-radius: 4px;">`;
+                                html += `<div style="font-weight: 600; margin-bottom: 5px;">${fb.label}:</div>`;
+                                html += `<div>${safeLocale(fb.scenario.funding)} at ${safe(fb.scenario.term, 'N/A')} ${safe(fb.scenario.termUnit, 'weeks')} = ${safeLocale(fb.scenario.payment)}/${safe(fb.scenario.frequency, 'weekly').replace('ly', '')} (Factor ${safe(fb.scenario.factor, 'N/A')})</div>`;
+                                html += `</div>`;
+                            }
+                        });
+                    } else {
+                        html += `<p>No fallback options available.</p>`;
+                    }
 
                     html += `</div>`;
 
                     // Talk About Section
                     if (nps.considerations && nps.considerations.length > 0) {
-                        const allPoints = nps.considerations.flatMap(c => c.points);
+                        const allPoints = nps.considerations.flatMap(c => c.points || []);
 
-                        // Separate strengths and concerns
                         const strengths = allPoints.filter(p =>
                             p.toLowerCase().includes('strong') ||
                             p.toLowerCase().includes('clean') ||
@@ -707,22 +721,26 @@
                         html += `</div>`;
                     }
 
-                    // Reality Check (Internal)
+                    // Reality Check
                     html += `<div style="background: #ede9fe; border-left: 4px solid #7c3aed; padding: 20px;">`;
                     html += `<h4 style="margin: 0 0 15px 0; color: #5b21b6;">📈 Reality Check (Internal)</h4>`;
                     html += `<div style="display: grid; gap: 10px;">`;
 
-                    // Calculate realistic range
-                    const amounts = [...(nps.conservative || []), ...(nps.moderate || []), ...(nps.aggressive || [])].map(s => s.funding);
-                    const minAmount = Math.min(...amounts);
-                    const maxAmount = Math.max(...amounts);
+                    const amounts = [...(nps.conservative || []), ...(nps.moderate || []), ...(nps.aggressive || [])].map(s => s.funding).filter(f => f != null);
 
-                    html += `<div><strong>File Supports:</strong> ${minAmount.toLocaleString()}-${maxAmount.toLocaleString()} range</div>`;
-                    html += `<div><strong>Most Likely Placement:</strong> ${Math.round(minAmount * 1.1 / 5000) * 5000}-${Math.round(maxAmount * 0.9 / 5000) * 5000}</div>`;
+                    if (amounts.length > 0) {
+                        const minAmount = Math.min(...amounts);
+                        const maxAmount = Math.max(...amounts);
+
+                        html += `<div><strong>File Supports:</strong> ${minAmount.toLocaleString()}-${maxAmount.toLocaleString()} range</div>`;
+                        html += `<div><strong>Most Likely Placement:</strong> ${(Math.round(minAmount * 1.1 / 5000) * 5000).toLocaleString()}-${(Math.round(maxAmount * 0.9 / 5000) * 5000).toLocaleString()}</div>`;
+                    } else {
+                        html += `<div><strong>File Supports:</strong> Unable to calculate range</div>`;
+                    }
+
                     html += `<div><strong>Confidence:</strong> 70-80% if credit 650+</div>`;
 
-                    // Fundability assessment
-                    const negDays = nps.considerations?.flatMap(c => c.points).find(p => p.includes('negative days'));
+                    const negDays = nps.considerations?.flatMap(c => c.points || []).find(p => p.includes('negative days'));
                     const fundability = negDays && negDays.includes('>') ? 'Moderate - will need to explain negative days' : 'Good - clean file';
                     html += `<div><strong>Fundability:</strong> ${fundability}</div>`;
 
