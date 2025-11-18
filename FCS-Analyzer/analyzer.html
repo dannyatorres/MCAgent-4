@@ -835,7 +835,7 @@
                 };
 
                 // Determine if this is a first position or stacking position
-                const isFirstPosition = !nps.lastPosition || nps.currentWithholding === 0;
+                const isFirstPosition = data.businessOverview.currentPositions === 0;
 
                 // Render appropriate view
                 if (isFirstPosition) {
